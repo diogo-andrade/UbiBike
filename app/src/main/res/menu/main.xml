@@ -6,6 +6,7 @@
         android:icon="@drawable/ic_menu_mylocation"
         android:title="@string/near_ubibikers"
         app:showAsAction="ifRoom"/>
+
     <item
         android:id="@+id/action_settings"
         android:orderInCategory="100"

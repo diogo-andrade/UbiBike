@@ -29,7 +29,7 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        setOverflowButtonColor(Color.WHITE);
+        //setOverflowButtonColor(Color.WHITE);
         /*FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -117,9 +117,11 @@ public class MainActivity extends AppCompatActivity
 
         } else if (id == R.id.nav_stations) {
 
-            /** } else if (id == R.id.nav_share) {
+            } else if (id == R.id.nav_wifi) {
 
-             } else if (id == R.id.nav_send) {*/
+            } else if (id == R.id.nav_settings) {
+
+            } else if (id == R.id.nav_logout) {
 
         }
 

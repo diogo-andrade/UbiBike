@@ -4,6 +4,6 @@
     <item name="ic_menu_mapmode" type="drawable">@android:drawable/ic_menu_mapmode</item>
     <item name="ic_menu_manage" type="drawable">@android:drawable/ic_menu_manage</item>
     <item name="ic_menu_share" type="drawable">@android:drawable/ic_menu_share</item>
-    <item name="ic_menu_send" type="drawable">@android:drawable/ic_menu_send</item>
+    <item name="ic_menu_revert" type="drawable">@android:drawable/ic_menu_revert</item>
     <item name="ic_menu_mylocation" type="drawable">@android:drawable/ic_menu_mylocation</item>
 </resources>

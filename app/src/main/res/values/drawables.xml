@@ -6,4 +6,5 @@
     <item name="ic_menu_share" type="drawable">@android:drawable/ic_menu_share</item>
     <item name="ic_menu_revert" type="drawable">@android:drawable/ic_menu_revert</item>
     <item name="ic_menu_mylocation" type="drawable">@android:drawable/ic_menu_mylocation</item>
+    <item name="ic_dialog_alert" type="drawable">@android:drawable/ic_dialog_alert</item>
 </resources>

@@ -1,10 +1,12 @@
 package pt.ulisboa.tecnico.cmov.ubibike;
 
-import android.app.Activity;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.AppCompatImageView;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -122,11 +124,36 @@ public class MainActivity extends AppCompatActivity
             } else if (id == R.id.nav_settings) {
 
             } else if (id == R.id.nav_logout) {
-
+                AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+                // Setting Dialog Title
+                alertDialog.setTitle(R.string.logout);
+                // Setting Dialog Message
+                alertDialog.setMessage(R.string.dialog_logout);
+                // Setting Icon to Dialog
+                alertDialog.setIcon(R.drawable.ic_dialog_alert);
+                // Setting Positive "Yes" Button
+                alertDialog.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        //TODO Clear login assignment
+                        Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
+                        startActivity(intent);
+                        finish();
+                    }
+                });
+                // Setting Negative "NO" Button
+                alertDialog.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        //Nothing to do
+                    }
+                });
+                // Showing Alert Message
+                alertDialog.show();
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+
 }
+

@@ -12,4 +12,11 @@
     tools:context="pt.ulisboa.tecnico.cmov.ubibike.MainActivity"
     tools:showIn="@layout/app_bar_main">
 
+    <!-- The main content view where fragments are loaded -->
+    <FrameLayout
+        android:id="@+id/Content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
+
 </RelativeLayout>

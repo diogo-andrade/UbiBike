@@ -6,6 +6,8 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.AppCompatImageView;
 import android.view.View;
@@ -19,6 +21,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -52,7 +55,7 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
     }
 
-    // Look for the Overflow icon and replace his color
+    // Search for the Overflow icon and replace his color
     private void setOverflowButtonColor(final int color) {
         final String overflowDescription = MainActivity.this.getString(R.string.abc_action_menu_overflow_description);
         final ViewGroup decorView = (ViewGroup) MainActivity.this.getWindow().getDecorView();
@@ -110,20 +113,33 @@ public class MainActivity extends AppCompatActivity
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
+        // Create a new fragment and specify the fragment to show based on nav item clicked
+        Fragment fragment = null;
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        boolean isFragment = false;
+
         // Handle navigation view item clicks here.
-        int id = item.getItemId();
-
-        if (id == R.id.nav_profile) {
-            // Handle the profile action
-        } else if (id == R.id.nav_ubibikers) {
-
-        } else if (id == R.id.nav_stations) {
-
-            } else if (id == R.id.nav_wifi) {
-
-            } else if (id == R.id.nav_settings) {
-
-            } else if (id == R.id.nav_logout) {
+        switch(item.getItemId()) {
+            case R.id.nav_profile:
+                //TODO: fragment
+                isFragment = true;
+                break;
+            case R.id.nav_ubibikers:
+                String arg = "test";
+                fragment = new UbibikersFragment().newInstance(arg, arg);
+                isFragment = true;
+                break;
+            case R.id.nav_stations:
+                isFragment = true;
+                //TODO: fragment
+                break;
+            case R.id.nav_wifi:
+                //TODO: activity
+                break;
+            case R.id.nav_settings:
+                //TODO: activity
+                break;
+            case R.id.nav_logout:
                 AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
                 // Setting Dialog Title
                 alertDialog.setTitle(R.string.logout);
@@ -148,6 +164,14 @@ public class MainActivity extends AppCompatActivity
                 });
                 // Showing Alert Message
                 alertDialog.show();
+                break;
+        }
+
+        if (isFragment) {
+            // Replace whatever is in the fragment_container view with this fragment,
+            // and add the transaction to the back stack so the user can navigate back
+            fragmentManager.beginTransaction().replace(R.id.Content, fragment).addToBackStack(null).commit();
+            setTitle(item.getTitle());
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

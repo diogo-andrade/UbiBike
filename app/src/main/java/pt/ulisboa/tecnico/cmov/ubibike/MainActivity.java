@@ -168,9 +168,8 @@ public class MainActivity extends AppCompatActivity
         }
 
         if (isFragment) {
-            // Replace whatever is in the fragment_container view with this fragment,
-            // and add the transaction to the back stack so the user can navigate back
-            fragmentManager.beginTransaction().replace(R.id.Content, fragment).addToBackStack(null).commit();
+            // Replace whatever is in the fragment_container view with this fragment
+            fragmentManager.beginTransaction().replace(R.id.Content, fragment).commit();
             setTitle(item.getTitle());
         }
 

@@ -1,5 +1,6 @@
 package pt.ulisboa.tecnico.cmov.ubibike;
 
+import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
@@ -102,10 +103,9 @@ public class MainActivity extends AppCompatActivity
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-       /* if (id == R.id.action_settings) {
+        if (id == R.id.action_near_ubibikers) {
             return true;
-        }*/
+        }
 
         return super.onOptionsItemSelected(item);
     }
@@ -140,35 +140,13 @@ public class MainActivity extends AppCompatActivity
                 //TODO: activity
                 break;
             case R.id.nav_logout:
-                AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
-                // Setting Dialog Title
-                alertDialog.setTitle(R.string.logout);
-                // Setting Dialog Message
-                alertDialog.setMessage(R.string.dialog_logout);
-                // Setting Icon to Dialog
-                alertDialog.setIcon(R.drawable.ic_dialog_alert);
-                // Setting Positive "Yes" Button
-                alertDialog.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        //TODO Clear login assignment
-                        Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
-                        startActivity(intent);
-                        finish();
-                    }
-                });
-                // Setting Negative "NO" Button
-                alertDialog.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        //Nothing to do
-                    }
-                });
-                // Showing Alert Message
-                alertDialog.show();
+                DialogFragment newFragment = LogoutDialogAlertFragment.newInstance();
+                newFragment.show(getFragmentManager(), "dialog");
                 break;
         }
 
         if (isFragment) {
-            // Replace whatever is in the fragment_container view with this fragment
+            // Replace whatever is in the fragment Content view with this fragment
             fragmentManager.beginTransaction().replace(R.id.Content, fragment).commit();
             setTitle(item.getTitle());
         }
@@ -176,6 +154,17 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    // Methods invoked by LogoutDialogAlertFragment
+    public void doYesClick() {
+        Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
+        startActivity(intent);
+        finish();
+    }
+
+    public void doNoClick() {
+        // Do stuff here.
     }
 
 }

@@ -21,6 +21,8 @@
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="near_ubibikers">Near Ubibikers</string>
+    <!-- Strings related to Ubibikers -->
+    <string name="action_search">Search...</string>
     <!-- Strings related to Sign out button-->
     <string name="yes">Yes</string>
     <string name="no">No</string>

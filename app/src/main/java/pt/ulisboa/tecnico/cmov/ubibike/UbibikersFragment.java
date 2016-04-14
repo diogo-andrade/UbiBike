@@ -1,12 +1,20 @@
 package pt.ulisboa.tecnico.cmov.ubibike;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.SearchView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.EditText;
+import android.widget.ListView;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 
 
 /**
@@ -20,12 +28,18 @@ import android.view.ViewGroup;
 public class UbibikersFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
+
+    private static final String STATE_ITEMS="items";
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
+
 
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
+
+    private ArrayList<String> mItems;
+    private ArrayAdapter<String> mAdapter;
 
     //private OnFragmentInteractionListener mListener;
 
@@ -67,6 +81,55 @@ public class UbibikersFragment extends Fragment {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_ubibikers, container, false);
     }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public void onViewCreated (View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        // On screen rotation loads ListView items previously searched
+        if (savedInstanceState != null) {
+            mItems = (ArrayList<String>) savedInstanceState.getSerializable(STATE_ITEMS);
+        } else {
+            mItems = new ArrayList<>();
+        }
+
+        SearchView sv = (SearchView) view.findViewById(R.id.searchView);
+        sv.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                // TODO: tratar da query e ligar-se ao server
+                String[] items = {"João Silva", "Bárbara Água", "Diogo Andrade"};
+                mItems = new ArrayList<>(Arrays.asList(items));
+                ListView listView = (ListView) getActivity().findViewById(R.id.listUbibikersView);
+                mAdapter = new ArrayAdapter<String>(getActivity().getBaseContext(), R.layout.ubibiker_list_item, R.id.ubibikerName, mItems);
+
+                listView.setAdapter(mAdapter);
+
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+        });
+
+        ListView listView = (ListView) getActivity().findViewById(R.id.listUbibikersView);
+        mAdapter = new ArrayAdapter<String>(getActivity().getBaseContext(), R.layout.ubibiker_list_item, R.id.ubibikerName, mItems);
+
+        listView.setAdapter(mAdapter);
+
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putSerializable(STATE_ITEMS, mItems);
+    }
+
+
 /*
     // TODO: Rename method, update argument and hook method into UI event
     public void onButtonPressed(Uri uri) {

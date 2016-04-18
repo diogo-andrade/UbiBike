@@ -121,6 +121,8 @@ public class MainActivity extends AppCompatActivity
         switch(item.getItemId()) {
             case R.id.nav_profile:
                 //TODO: fragment
+                String args = "test";
+                fragment = new ProfileFragment().newInstance(args, args);
                 isFragment = true;
                 break;
             case R.id.nav_ubibikers:

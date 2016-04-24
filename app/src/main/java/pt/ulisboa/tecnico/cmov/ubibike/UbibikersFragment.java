@@ -1,6 +1,7 @@
 package pt.ulisboa.tecnico.cmov.ubibike;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
@@ -9,9 +10,12 @@ import android.support.v7.widget.SearchView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,6 +32,9 @@ import java.util.Arrays;
 public class UbibikersFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
+
+    private static final String EXTRA_NAME = "name";
+    private static final String EXTRA_EMAIL = "email";
 
     private static final String STATE_ITEMS="items";
     private static final String ARG_PARAM1 = "param1";
@@ -121,6 +128,17 @@ public class UbibikersFragment extends Fragment {
 
         listView.setAdapter(mAdapter);
 
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                TextView vName = (TextView) view.findViewById(R.id.ubibikerName);
+                TextView vEmail = (TextView) view.findViewById(R.id.ubibikerEmail);
+                Intent intent = new Intent(getContext(), UbibikerProfileActivity.class);
+                intent.putExtra(EXTRA_NAME,vName.getText());
+                intent.putExtra(EXTRA_EMAIL,vEmail.getText());
+                startActivity(intent);
+            }
+        });
     }
 
     @Override

@@ -29,6 +29,9 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
+    Fragment fragment = null;
+    FragmentManager fragmentManager = getSupportFragmentManager();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,6 +56,12 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+        //Set profile as Home fragment
+        navigationView.getMenu().getItem(0).setChecked(true);
+        //TODO: fragment
+        String args = "test";
+        fragment = new ProfileFragment().newInstance(args, args);
+        fragmentManager.beginTransaction().replace(R.id.Content, fragment).commit();
     }
 
     // Search for the Overflow icon and replace his color
@@ -113,8 +122,6 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         // Create a new fragment and specify the fragment to show based on nav item clicked
-        Fragment fragment = null;
-        FragmentManager fragmentManager = getSupportFragmentManager();
         boolean isFragment = false;
 
         // Handle navigation view item clicks here.
@@ -149,7 +156,6 @@ public class MainActivity extends AppCompatActivity
         if (isFragment) {
             // Replace whatever is in the fragment Content view with this fragment
             fragmentManager.beginTransaction().replace(R.id.Content, fragment).commit();
-            setTitle(item.getTitle());
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

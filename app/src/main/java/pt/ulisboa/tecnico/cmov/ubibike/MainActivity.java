@@ -138,6 +138,11 @@ public class MainActivity extends AppCompatActivity
                 isFragment = true;
                 break;
             case R.id.nav_stations:
+                Intent intent = new Intent(this, RoutesActivity.class);
+                startActivity(intent);
+                //TODO: fragment
+                break;
+            case R.id.nav_routes:
                 isFragment = true;
                 //TODO: fragment
                 break;

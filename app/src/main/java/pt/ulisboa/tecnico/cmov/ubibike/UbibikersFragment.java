@@ -3,13 +3,16 @@ package pt.ulisboa.tecnico.cmov.ubibike;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.SearchView;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
@@ -122,6 +125,7 @@ public class UbibikersFragment extends Fragment {
                 return false;
             }
         });
+
 
         ListView listView = (ListView) getActivity().findViewById(R.id.listUbibikersView);
         mAdapter = new ArrayAdapter<String>(getActivity().getBaseContext(), R.layout.ubibiker_list_item, R.id.ubibikerName, mItems);

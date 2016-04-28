@@ -1,9 +1,11 @@
 package pt.ulisboa.tecnico.cmov.ubibike;
 
 import android.app.DialogFragment;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -11,6 +13,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.AppCompatImageView;
+import android.view.MotionEvent;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -22,6 +25,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -56,12 +61,23 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
         //Set profile as Home fragment
-        navigationView.getMenu().getItem(0).setChecked(true);
-        //TODO: fragment
-        String args = "test";
-        fragment = new ProfileFragment().newInstance(args, args);
-        fragmentManager.beginTransaction().replace(R.id.Content, fragment).commit();
+        if (savedInstanceState == null) {
+            navigationView.getMenu().getItem(0).setChecked(true);
+            //TODO: fragment
+            String args = "test";
+            fragment = new ProfileFragment().newInstance(args, args);
+            fragmentManager.beginTransaction().replace(R.id.Content, fragment).commit();
+        }
+    }
+
+    private boolean hasItemSelected(NavigationView view){
+        for (int i=0;i<3;i++) {
+            if (view.getMenu().getItem(i).isChecked())
+                return true;
+        }
+        return false;
     }
 
     // Search for the Overflow icon and replace his color
@@ -138,13 +154,13 @@ public class MainActivity extends AppCompatActivity
                 isFragment = true;
                 break;
             case R.id.nav_stations:
-                Intent intent = new Intent(this, RoutesActivity.class);
-                startActivity(intent);
+                fragment = new StationsFragment().newInstance();
+                isFragment = true;
                 //TODO: fragment
                 break;
             case R.id.nav_routes:
-                isFragment = true;
-                //TODO: fragment
+                Intent intent = new Intent(this, RoutesActivity.class);
+                startActivity(intent);
                 break;
             case R.id.nav_wifi:
                 //TODO: activity
@@ -166,6 +182,23 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent event) {
+        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+            View v = getCurrentFocus();
+            if ( v instanceof EditText) {
+                Rect outRect = new Rect();
+                v.getGlobalVisibleRect(outRect);
+                if (!outRect.contains((int)event.getRawX(), (int)event.getRawY())) {
+                    v.clearFocus();
+                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+                }
+            }
+        }
+        return super.dispatchTouchEvent( event );
     }
 
     // Methods invoked by LogoutDialogAlertFragment

@@ -1,9 +1,10 @@
-package pt.ulisboa.tecnico.cmov.ubibike;
+package pt.ulisboa.tecnico.cmov.ubibike.adapters;
 
 import java.util.HashMap;
 import java.util.List;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,6 +12,9 @@ import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.Button;
 import android.widget.TextView;
+
+import pt.ulisboa.tecnico.cmov.ubibike.MapsActivity;
+import pt.ulisboa.tecnico.cmov.ubibike.R;
 
 public class MyExpandableAdapter extends BaseExpandableListAdapter {
 
@@ -61,6 +65,16 @@ public class MyExpandableAdapter extends BaseExpandableListAdapter {
                     ((Button) v).setText("CANCEL");
                 else if ("CANCEL".equals(((Button) v).getText().toString()))
                     ((Button) v).setText("BOOK");
+            }
+        });
+
+        Button mapButton = (Button) convertView.findViewById(R.id.map_button);
+        mapButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                Intent intent = new Intent(v.getContext(), MapsActivity.class);
+                v.getContext().startActivity(intent);
+                //finish();
+
             }
         });
 

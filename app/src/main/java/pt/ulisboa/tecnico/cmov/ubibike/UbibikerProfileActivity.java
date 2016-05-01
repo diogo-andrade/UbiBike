@@ -7,8 +7,8 @@ import android.widget.Toast;
 
 public class UbibikerProfileActivity extends AppCompatActivity {
 
-    private static final String EXTRA_NAME = "name";
-    private static final String EXTRA_EMAIL = "email";
+    private static final String EXTRA_NAME = "pt.ulisboa.tecnico.cmov.ubibike.NAME";
+    private static final String EXTRA_EMAIL = "pt.ulisboa.tecnico.cmov.ubibike.EMAIL";
 
 
     @Override

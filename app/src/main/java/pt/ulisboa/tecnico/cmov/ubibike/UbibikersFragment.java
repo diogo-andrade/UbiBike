@@ -1,10 +1,15 @@
 package pt.ulisboa.tecnico.cmov.ubibike;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.net.Uri;
+import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.SearchView;
@@ -23,6 +28,9 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import pt.ulisboa.tecnico.cmov.ubibike.adapters.UbibikerAdapter;
+import pt.ulisboa.tecnico.cmov.ubibike.objects.Ubibiker;
+
 
 /**
  * A simple {@link Fragment} subclass.
@@ -36,19 +44,16 @@ public class UbibikersFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
 
-    private static final String EXTRA_NAME = "name";
-    private static final String EXTRA_EMAIL = "email";
+    private static final String EXTRA_NAME = "pt.ulisboa.tecnico.cmov.ubibike.NAME";
+    private static final String EXTRA_EMAIL = "pt.ulisboa.tecnico.cmov.ubibike.EMAIL";
 
     private static final String STATE_ITEMS="items";
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
 
+    private QueryTask mQueryTask;
+    private View mProgressView;
+    private ListView listView;
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    private ArrayList<String> mItems;
+    private ArrayList<Ubibiker> mItems;
     private ArrayAdapter<String> mAdapter;
 
     //private OnFragmentInteractionListener mListener;
@@ -68,10 +73,6 @@ public class UbibikersFragment extends Fragment {
     // TODO: Rename and change types and number of parameters
     public static UbibikersFragment newInstance(String param1, String param2) {
         UbibikersFragment fragment = new UbibikersFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
 
         return fragment;
     }
@@ -79,10 +80,6 @@ public class UbibikersFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
     }
 
     @Override
@@ -99,23 +96,21 @@ public class UbibikersFragment extends Fragment {
 
         // On screen rotation loads ListView items previously searched
         if (savedInstanceState != null) {
-            mItems = (ArrayList<String>) savedInstanceState.getSerializable(STATE_ITEMS);
+            mItems = (ArrayList<Ubibiker>) savedInstanceState.getSerializable(STATE_ITEMS);
         } else {
             mItems = new ArrayList<>();
         }
+        mProgressView =   getActivity().findViewById(R.id.search_progress);
+        listView = (ListView) getActivity().findViewById(R.id.listUbibikersView);
 
         SearchView sv = (SearchView) view.findViewById(R.id.searchView);
         sv.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
 
             @Override
             public boolean onQueryTextSubmit(String query) {
-                // TODO: tratar da query e ligar-se ao server
-                String[] items = {"João Silva", "Bárbara Água", "Diogo Andrade"};
-                mItems = new ArrayList<>(Arrays.asList(items));
-                ListView listView = (ListView) getActivity().findViewById(R.id.listUbibikersView);
-                mAdapter = new ArrayAdapter<String>(getActivity().getBaseContext(), R.layout.ubibiker_list_item, R.id.ubibikerName, mItems);
-
-                listView.setAdapter(mAdapter);
+                showProgress(true);
+                mQueryTask = new QueryTask(query);
+                mQueryTask.execute();
 
                 return true;
             }
@@ -126,20 +121,17 @@ public class UbibikersFragment extends Fragment {
             }
         });
 
-
-        ListView listView = (ListView) getActivity().findViewById(R.id.listUbibikersView);
-        mAdapter = new ArrayAdapter<String>(getActivity().getBaseContext(), R.layout.ubibiker_list_item, R.id.ubibikerName, mItems);
+        mAdapter = new UbibikerAdapter(getActivity().getBaseContext(),R.layout.ubibiker_list_item, mItems);
 
         listView.setAdapter(mAdapter);
-
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 TextView vName = (TextView) view.findViewById(R.id.ubibikerName);
                 TextView vEmail = (TextView) view.findViewById(R.id.ubibikerEmail);
                 Intent intent = new Intent(getContext(), UbibikerProfileActivity.class);
-                intent.putExtra(EXTRA_NAME,vName.getText());
-                intent.putExtra(EXTRA_EMAIL,vEmail.getText());
+                intent.putExtra(EXTRA_NAME, vName.getText());
+                intent.putExtra(EXTRA_EMAIL, vEmail.getText());
                 startActivity(intent);
             }
         });
@@ -151,6 +143,85 @@ public class UbibikersFragment extends Fragment {
         outState.putSerializable(STATE_ITEMS, mItems);
     }
 
+    public class QueryTask extends AsyncTask<Void, Void, Boolean> {
+        private final String mQuery;
+
+        QueryTask(String query) {
+            mQuery = query;
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            // TODO: attempt query request in network service.
+            try {
+                // Simulate network access.
+                Thread.sleep(1000);
+                mItems = generateQueryResult();
+            } catch (InterruptedException e) {
+                return false;
+            }
+
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(final Boolean success) {
+            showProgress(false);
+
+            mAdapter = new UbibikerAdapter(getActivity().getBaseContext(),R.layout.ubibiker_list_item, mItems);
+            listView.setAdapter(mAdapter);
+        }
+    }
+
+    /**
+     * Shows the progress UI and hides the login form.
+     */
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
+    private void showProgress(final boolean show) {
+        // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
+        // for very easy animations. If available, use these APIs to fade-in
+        // the progress spinner.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
+            int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
+
+            listView.setVisibility(show ? View.GONE : View.VISIBLE);
+            listView.animate().setDuration(shortAnimTime).alpha(
+                    show ? 0 : 1).setListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    listView.setVisibility(show ? View.GONE : View.VISIBLE);
+                }
+            });
+
+            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+            mProgressView.animate().setDuration(shortAnimTime).alpha(
+                    show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+                }
+            });
+        } else {
+            // The ViewPropertyAnimator APIs are not available, so simply show
+            // and hide the relevant UI components.
+            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+            listView.setVisibility(show ? View.GONE : View.VISIBLE);
+        }
+    }
+
+    public ArrayList<Ubibiker> generateQueryResult() {
+        Ubibiker u1 = new Ubibiker("Diogo Andrade", "diogo@yubo.be");
+        Ubibiker u2 = new Ubibiker("Rafael Barreira", "raba@inesc.pt");
+        Ubibiker u3 = new Ubibiker("Pedro Loureiro", "pl@hotmail.com");
+
+        ArrayList<Ubibiker> result = new ArrayList<Ubibiker>();
+
+        result.add(u1);
+        result.add(u2);
+        result.add(u3);
+
+        return result;
+    }
 
 /*
     // TODO: Rename method, update argument and hook method into UI event

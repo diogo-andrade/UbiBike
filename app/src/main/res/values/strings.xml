@@ -37,4 +37,5 @@
 
     <string name="title_activity_ubibiker_profile">Ubibiker Profile</string>
     <string name="title_activity_routes">RoutesActivity</string>
+    <string name="title_activity_maps">Map</string>
 </resources>

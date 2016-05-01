@@ -34,5 +34,15 @@
             android:layout_gravity="left|top"
             android:paddingTop="15dp"
             android:layout_below="@+id/searchView" />
+
+        <ProgressBar
+            android:id="@+id/search_progress"
+            style="?android:attr/progressBarStyleLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="8dp"
+            android:visibility="gone"
+            android:layout_below="@+id/searchView"/>
     </RelativeLayout>
 </FrameLayout>

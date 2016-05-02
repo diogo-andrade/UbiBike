@@ -7,9 +7,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ExpandableListView;
 
+import com.google.android.gms.maps.model.LatLng;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import pt.ulisboa.tecnico.cmov.ubibike.adapters.MyExpandableAdapter;
 
@@ -26,9 +29,11 @@ public class StationsFragment extends Fragment {
 
     private static final String STATE_STATIONS="stations";
     private static final String STATE_KEYS="keys";
+    private static final String STATE_COORDINATES="coordinates";
 
     public HashMap<String,List<String>> stationsHashMap;
     public ArrayList<String> stationsHashMapKeys;
+    public ArrayList<LatLng> stationsCoordinates;
 
     public StationsFragment() {
         // Required empty public constructor
@@ -71,10 +76,11 @@ public class StationsFragment extends Fragment {
         if (savedInstanceState != null) {
             stationsHashMap = (HashMap<String,List<String>>) savedInstanceState.getSerializable(STATE_STATIONS);
             stationsHashMapKeys = (ArrayList<String>) savedInstanceState.getSerializable(STATE_KEYS);
+            stationsCoordinates = (ArrayList<LatLng>)  savedInstanceState.getSerializable(STATE_COORDINATES);
         } else {
             prepareListData();
         }
-        MyExpandableAdapter mAdapter =  new MyExpandableAdapter(getActivity().getBaseContext(), stationsHashMap, stationsHashMapKeys);
+        MyExpandableAdapter mAdapter =  new MyExpandableAdapter(getActivity().getBaseContext(), stationsHashMap, stationsHashMapKeys, stationsCoordinates);
         expandableListView.setAdapter(mAdapter);
     }
 
@@ -84,11 +90,18 @@ public class StationsFragment extends Fragment {
     private void prepareListData() {
         stationsHashMapKeys = new ArrayList<String>();
         stationsHashMap = new HashMap<String, List<String>>();
+        stationsCoordinates = new ArrayList<LatLng>();
+
 
         // Adding child data
         stationsHashMapKeys.add("Station 0 - Cais do Sodré");
         stationsHashMapKeys.add("Station 1 - Chiado");
         stationsHashMapKeys.add("Station 2 - Areeiro");
+
+        // Adding stations coordinates
+        stationsCoordinates.add(new LatLng(38.7059084,-9.144370200000026));
+        stationsCoordinates.add(new LatLng(38.710672,-9.139091000000008));
+        stationsCoordinates.add(new LatLng(38.742599,-9.133806999999933));
 
         // Adding child data
         List<String> station0 = new ArrayList<String>();
@@ -111,6 +124,7 @@ public class StationsFragment extends Fragment {
         super.onSaveInstanceState(outState);
         outState.putSerializable(STATE_STATIONS, stationsHashMap);
         outState.putSerializable(STATE_KEYS, stationsHashMapKeys);
+        outState.putSerializable(STATE_COORDINATES,stationsCoordinates);
     }
 /*
     // TODO: Rename method, update argument and hook method into UI event

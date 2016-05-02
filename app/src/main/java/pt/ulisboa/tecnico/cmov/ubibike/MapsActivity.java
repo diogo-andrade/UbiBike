@@ -1,5 +1,7 @@
 package pt.ulisboa.tecnico.cmov.ubibike;
 
+import android.content.Intent;
+import android.graphics.Color;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 
@@ -7,12 +9,21 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PolylineOptions;
+
+import pt.ulisboa.tecnico.cmov.ubibike.objects.Trajectory;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
+    private static final String EXTRA_TRACK = "pt.ulisboa.tecnico.cmov.ubibike.TRACK";
+    private static final String EXTRA_NAME = "pt.ulisboa.tecnico.cmov.ubibike.NAME";
+
     private GoogleMap mMap;
+    private LatLng marker;
+    private String trackName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,6 +33,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+        Trajectory track = getIntent().getParcelableExtra(EXTRA_TRACK);
+        marker = track.getStart();
+        trackName = getIntent().getExtras().getString(EXTRA_NAME);
     }
 
 
@@ -39,8 +53,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap = googleMap;
 
         // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+        mMap.addMarker(new MarkerOptions().position(marker).title(trackName));
+        CameraPosition cameraPosition = new CameraPosition.Builder()
+                .target(marker)
+                .zoom(17).build();
+
+        //mMap.moveCamera(CameraUpdateFactory.newLatLng(marker));
+        mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+        //mMap.animateCamera(CameraUpdateFactory.zoomTo(15), 2000, null);
     }
 }

@@ -13,21 +13,29 @@ import android.widget.BaseExpandableListAdapter;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.google.android.gms.maps.model.LatLng;
+
 import pt.ulisboa.tecnico.cmov.ubibike.MapsActivity;
 import pt.ulisboa.tecnico.cmov.ubibike.R;
+import pt.ulisboa.tecnico.cmov.ubibike.objects.Trajectory;
 
 public class MyExpandableAdapter extends BaseExpandableListAdapter {
+
+    private static final String EXTRA_TRACK = "pt.ulisboa.tecnico.cmov.ubibike.TRACK";
+    private static final String EXTRA_NAME = "pt.ulisboa.tecnico.cmov.ubibike.NAME";
 
     private Context _context;
     private List<String> _listDataHeader; // header titles
     // child data in format of header title, child title
     private HashMap<String, List<String>> _listDataChild;
+    private List<LatLng> _stationsCoordinates;
 
     public MyExpandableAdapter(Context context, HashMap<String, List<String>> listChildData,
-                               List<String> listDataHeader) {
+                               List<String> listDataHeader, List<LatLng> coordinates) {
         this._context = context;
         this._listDataHeader = listDataHeader;
         this._listDataChild = listChildData;
+        this._stationsCoordinates = coordinates;
     }
 
     @Override
@@ -42,7 +50,7 @@ public class MyExpandableAdapter extends BaseExpandableListAdapter {
     }
 
     @Override
-    public View getChildView(int groupPosition, final int childPosition,
+    public View getChildView(final int groupPosition, final int childPosition,
                              boolean isLastChild, View convertView, ViewGroup parent) {
 
         final String childText = (String) getChild(groupPosition, childPosition);
@@ -68,10 +76,17 @@ public class MyExpandableAdapter extends BaseExpandableListAdapter {
             }
         });
 
+
+
         Button mapButton = (Button) convertView.findViewById(R.id.map_button);
         mapButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+                LatLng coordinates = _stationsCoordinates.get(groupPosition);
+                Trajectory track = new Trajectory(coordinates);
+                String station = _listDataHeader.get(groupPosition);
                 Intent intent = new Intent(v.getContext(), MapsActivity.class);
+                intent.putExtra(EXTRA_TRACK, track);
+                intent.putExtra(EXTRA_NAME, station);
                 v.getContext().startActivity(intent);
                 //finish();
 

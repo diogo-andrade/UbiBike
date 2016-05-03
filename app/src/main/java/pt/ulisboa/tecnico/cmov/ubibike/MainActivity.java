@@ -128,6 +128,10 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.action_near_ubibikers) {
+            fragment = new NearUbikers().newInstance();
+            fragmentManager.beginTransaction().replace(R.id.Content, fragment).commit();
+            DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+            drawer.closeDrawer(GravityCompat.START);
             return true;
         }
 
@@ -159,8 +163,7 @@ public class MainActivity extends AppCompatActivity
                 //TODO: fragment
                 break;
             case R.id.nav_routes:
-                Intent intent = new Intent(this, RoutesActivity.class);
-                startActivity(intent);
+
                 break;
             case R.id.nav_wifi:
                 //TODO: activity

@@ -93,7 +93,7 @@ public class NearUbikers extends Fragment {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 TextView vName = (TextView) view.findViewById(R.id.ubibikerName);
                 TextView vEmail = (TextView) view.findViewById(R.id.ubibikerEmail);
-                Intent intent = new Intent(getContext(), UbibikerProfileActivity.class);
+                Intent intent = new Intent(getContext(), ChatActivity.class);
                 intent.putExtra(EXTRA_NAME, vName.getText());
                 intent.putExtra(EXTRA_EMAIL, vEmail.getText());
                 startActivity(intent);

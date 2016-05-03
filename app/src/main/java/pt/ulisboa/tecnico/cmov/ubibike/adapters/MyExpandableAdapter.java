@@ -6,6 +6,7 @@ import java.util.List;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Typeface;
+import android.os.Parcelable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -85,7 +86,7 @@ public class MyExpandableAdapter extends BaseExpandableListAdapter {
                 Trajectory track = new Trajectory(coordinates);
                 String station = _listDataHeader.get(groupPosition);
                 Intent intent = new Intent(v.getContext(), MapsActivity.class);
-                intent.putExtra(EXTRA_TRACK, track);
+                intent.putExtra(EXTRA_TRACK, (Parcelable) track);
                 intent.putExtra(EXTRA_NAME, station);
                 v.getContext().startActivity(intent);
                 //finish();

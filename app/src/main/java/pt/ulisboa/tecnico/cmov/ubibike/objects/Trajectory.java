@@ -9,12 +9,16 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.io.Serializable;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 
 /**
  * Created by diogo on 30-04-2016.
  */
-public class Trajectory implements Parcelable {
+public class Trajectory implements Parcelable, Serializable {
+    private String name;
+    private Timestamp ts;
     private LatLng start;
     private LatLng end;
     private PolylineOptions line;
@@ -57,6 +61,22 @@ public class Trajectory implements Parcelable {
 
     public void setLine(PolylineOptions line) {
         this.line = line;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Timestamp getTimeStamp() {
+        return ts;
+    }
+
+    public void setTimeStamp(Timestamp ts) {
+        this.ts = ts;
     }
 
    protected Trajectory(Parcel in) {

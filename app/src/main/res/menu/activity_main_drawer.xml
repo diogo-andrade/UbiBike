@@ -14,10 +14,6 @@
             android:id="@+id/nav_stations"
             android:icon="@drawable/ic_menu_mapmode"
             android:title="Stations" />
-        <item
-            android:id="@+id/nav_routes"
-            android:icon="@drawable/ic_menu_routes"
-            android:title="Routes" />
 
     </group>
 

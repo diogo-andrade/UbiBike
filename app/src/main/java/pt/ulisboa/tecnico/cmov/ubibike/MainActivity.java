@@ -72,14 +72,6 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private boolean hasItemSelected(NavigationView view){
-        for (int i=0;i<3;i++) {
-            if (view.getMenu().getItem(i).isChecked())
-                return true;
-        }
-        return false;
-    }
-
     // Search for the Overflow icon and replace his color
     private void setOverflowButtonColor(final int color) {
         final String overflowDescription = MainActivity.this.getString(R.string.abc_action_menu_overflow_description);
@@ -161,9 +153,6 @@ public class MainActivity extends AppCompatActivity
                 fragment = new StationsFragment().newInstance();
                 isFragment = true;
                 //TODO: fragment
-                break;
-            case R.id.nav_routes:
-
                 break;
             case R.id.nav_wifi:
                 //TODO: activity

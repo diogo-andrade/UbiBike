@@ -36,6 +36,8 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
 
     <string name="title_activity_ubibiker_profile">Ubibiker Profile</string>
-    <string name="title_activity_routes">RoutesActivity</string>
     <string name="title_activity_maps">Map</string>
+    <string name="track_date">24/03/2016</string>
+    <string name="track_time">23:20</string>
+    <string name="track_name">Lisboa a Cascais</string>
 </resources>

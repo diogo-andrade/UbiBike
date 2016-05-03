@@ -1,20 +1,40 @@
 package pt.ulisboa.tecnico.cmov.ubibike;
 
+import android.app.LocalActivityManager;
+import android.content.Intent;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.support.v4.app.Fragment;
+import android.widget.TabHost;
+
+import com.google.android.gms.maps.model.LatLng;
+
+import java.sql.Timestamp;
+import java.util.ArrayList;
+
+import pt.ulisboa.tecnico.cmov.ubibike.objects.Trajectory;
 
 /**
  * Created by Loureiro on 18-04-2016.
  */
 public class ProfileFragment extends Fragment {
 
+    private static final String STATE_TAB = "tab";
+
+    private static final String EXTRA_TRACKS = "pt.ulisboa.tecnico.cmov.ubibike.TRACKS";
+
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
+
+    private TabHost mTabHost;
+    private int mCurrentTab;
+
+    LocalActivityManager mLocalActivityManager;
 
     // TODO: Rename and change types of parameters
     private String mParam1;
@@ -57,12 +77,82 @@ public class ProfileFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        if (savedInstanceState != null) {
+            mCurrentTab =  (int) savedInstanceState.getSerializable(STATE_TAB);
+        }
         // Inflate the layout for this fragment
+        View rootView = inflater.inflate(R.layout.fragment_profile, container, false);
 
-        return inflater.inflate(R.layout.fragment_profile, container, false);
+        mTabHost = (TabHost) rootView.findViewById(R.id.tabHost);
+        mLocalActivityManager = new LocalActivityManager(getActivity(),false);
+        mLocalActivityManager.dispatchCreate(savedInstanceState);
+        mTabHost.setup(mLocalActivityManager);
+        //mTabHost.setup(LocalActivityManager);
+
+        TabHost.TabSpec tabRecentTracks = mTabHost.newTabSpec("Tab1");
+        tabRecentTracks.setIndicator("Most Recent Tracks");
+        Intent i1 = new Intent().setClass(getContext(),TracksActivity.class);
+        i1.putParcelableArrayListExtra(EXTRA_TRACKS, generateData());
+        tabRecentTracks.setContent(i1);
+        mTabHost.addTab(tabRecentTracks);
+
+        TabHost.TabSpec tabPastTracks = mTabHost.newTabSpec("Tab2");
+        tabPastTracks.setIndicator("Past Tracks");
+        Intent i2 = new Intent().setClass(getContext(),TracksActivity.class);
+        tabPastTracks.setContent(i2);
+        mTabHost.addTab(tabPastTracks);
+
+        mTabHost.setOnTabChangedListener(new TabHost.OnTabChangeListener() {
+            @Override
+            public void onTabChanged(String tabId) {
+                mCurrentTab = mTabHost.getCurrentTab();
+            }
+        });
+
+        mTabHost.setCurrentTab(mCurrentTab);
+
+        return rootView;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        mLocalActivityManager.dispatchResume();
+    }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        mLocalActivityManager.dispatchPause(isRemoving());
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putSerializable(STATE_TAB, mCurrentTab);
+    }
+
+    public ArrayList<Trajectory> generateData() {
+        Trajectory t1 = new Trajectory(new LatLng(38.7363219,-9.1378428));
+        Trajectory t2 = new Trajectory(new LatLng(38.7363219,-9.1378428));
+        Trajectory t3 = new Trajectory(new LatLng(38.7363219,-9.1378428));
+
+        t1.setName("Técnico");
+        t2.setName("Secção de Folhas");
+        t3.setName("Desordem dos Engenhieors");
+
+        t1.setTimeStamp(new Timestamp(1213124211));
+        t2.setTimeStamp(new Timestamp(950432932));
+        t3.setTimeStamp(new Timestamp(329432909));
+
+        ArrayList<Trajectory> result = new ArrayList<Trajectory>();
+
+        result.add(t1);
+        result.add(t2);
+        result.add(t3);
+
+        return result;
+    }
 /*
     // TODO: Rename method, update argument and hook method into UI event
     public void onButtonPressed(Uri uri) {

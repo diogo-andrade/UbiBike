@@ -13,11 +13,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
 
+import pt.ulisboa.tecnico.cmov.ubibike.adapters.NearUbibikerAdapter;
 import pt.ulisboa.tecnico.cmov.ubibike.adapters.UbibikerAdapter;
 import pt.ulisboa.tecnico.cmov.ubibike.objects.Ubibiker;
 
@@ -86,19 +89,12 @@ public class NearUbikers extends Fragment {
 
         mItems = generateQueryResult();
 
-        mAdapter = new UbibikerAdapter(getActivity().getBaseContext(),R.layout.ubibiker_list_item, mItems);
+        mAdapter = new NearUbibikerAdapter(getActivity().getBaseContext(),R.layout.near_ubibiker_list_item, EXTRA_NAME, mItems);
 
         listView.setAdapter(mAdapter);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                TextView vName = (TextView) view.findViewById(R.id.ubibikerName);
-                TextView vEmail = (TextView) view.findViewById(R.id.ubibikerEmail);
-                Intent intent = new Intent(getContext(), ChatActivity.class);
-                intent.putExtra(EXTRA_NAME, vName.getText().toString());
-                startActivity(intent);
-            }
-        });
+
+
+
     }
 
     @Override

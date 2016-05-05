@@ -2,17 +2,24 @@ package pt.ulisboa.tecnico.cmov.ubibike;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ExpandableListView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.model.LatLng;
 
+import java.security.acl.Group;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import pt.ulisboa.tecnico.cmov.ubibike.adapters.MyExpandableAdapter;
 
@@ -34,6 +41,27 @@ public class StationsFragment extends Fragment {
     public HashMap<String,List<String>> stationsHashMap;
     public ArrayList<String> stationsHashMapKeys;
     public ArrayList<LatLng> stationsCoordinates;
+
+    Timer t;
+    View v;
+    Bundle lastBundle;
+    MyExpandableAdapter mAdapter;
+    ExpandableListView expandableListView;
+    private int lastExpandedPosition = -1;
+
+    TimerTask timer= new TimerTask(){
+
+        @Override
+        public void run() {
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    prepareListData();
+                    mAdapter.notifyDataSetChanged();
+                }
+            });
+        }
+    };
 
     public StationsFragment() {
         // Required empty public constructor
@@ -57,7 +85,14 @@ public class StationsFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        lastBundle = savedInstanceState;
+        if (savedInstanceState != null) {
+            stationsHashMap = (HashMap<String,List<String>>) savedInstanceState.getSerializable(STATE_STATIONS);
+            stationsHashMapKeys = (ArrayList<String>) savedInstanceState.getSerializable(STATE_KEYS);
+            stationsCoordinates = (ArrayList<LatLng>)  savedInstanceState.getSerializable(STATE_COORDINATES);
+        } else {
+            prepareListData();
+        }
     }
 
     @Override
@@ -71,17 +106,25 @@ public class StationsFragment extends Fragment {
     @Override
     public void onViewCreated (View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        ExpandableListView expandableListView = (ExpandableListView) getActivity().findViewById(R.id.stationsList);
+        expandableListView = (ExpandableListView) getActivity().findViewById(R.id.stationsList);
 
-        if (savedInstanceState != null) {
-            stationsHashMap = (HashMap<String,List<String>>) savedInstanceState.getSerializable(STATE_STATIONS);
-            stationsHashMapKeys = (ArrayList<String>) savedInstanceState.getSerializable(STATE_KEYS);
-            stationsCoordinates = (ArrayList<LatLng>)  savedInstanceState.getSerializable(STATE_COORDINATES);
-        } else {
-            prepareListData();
-        }
-        MyExpandableAdapter mAdapter =  new MyExpandableAdapter(getActivity().getBaseContext(), stationsHashMap, stationsHashMapKeys, stationsCoordinates);
+        mAdapter =  new MyExpandableAdapter(getActivity().getBaseContext(), stationsHashMap, stationsHashMapKeys, stationsCoordinates);
         expandableListView.setAdapter(mAdapter);
+
+      /*  expandableListView.setOnGroupExpandListener(new ExpandableListView.OnGroupExpandListener() {
+
+            @Override
+            public void onGroupExpand(int groupPosition) {
+                if (lastExpandedPosition != -1
+                        && groupPosition != lastExpandedPosition) {
+                    expandableListView.collapseGroup(lastExpandedPosition);
+                }
+                lastExpandedPosition = groupPosition;
+            }
+        });*/
+
+        t = new Timer();
+        t.scheduleAtFixedRate(timer, 0, 10000);
     }
 
     /*
@@ -126,6 +169,13 @@ public class StationsFragment extends Fragment {
         outState.putSerializable(STATE_KEYS, stationsHashMapKeys);
         outState.putSerializable(STATE_COORDINATES,stationsCoordinates);
     }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        t.cancel();
+    }
+
 /*
     // TODO: Rename method, update argument and hook method into UI event
     public void onButtonPressed(Uri uri) {

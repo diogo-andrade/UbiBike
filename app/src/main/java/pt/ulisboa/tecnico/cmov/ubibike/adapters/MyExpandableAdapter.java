@@ -12,6 +12,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.google.android.gms.maps.model.LatLng;
@@ -30,6 +32,9 @@ public class MyExpandableAdapter extends BaseExpandableListAdapter {
     // child data in format of header title, child title
     private HashMap<String, List<String>> _listDataChild;
     private List<LatLng> _stationsCoordinates;
+
+    TextView txtListChild;
+    Boolean isBikeBooked = false;
 
     public MyExpandableAdapter(Context context, HashMap<String, List<String>> listChildData,
                                List<String> listDataHeader, List<LatLng> coordinates) {
@@ -62,7 +67,7 @@ public class MyExpandableAdapter extends BaseExpandableListAdapter {
             convertView = infalInflater.inflate(R.layout.child_layout, null);
         }
 
-        TextView txtListChild = (TextView) convertView
+        txtListChild = (TextView) convertView
                 .findViewById(R.id.textViewChild);
 
         txtListChild.setText(childText);
@@ -70,14 +75,20 @@ public class MyExpandableAdapter extends BaseExpandableListAdapter {
         Button button = (Button) convertView.findViewById(R.id.button);
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                if ("BOOK".equals(((Button) v).getText().toString()))
+                if ("BOOK".equals(((Button) v).getText().toString()) && !isBikeBooked) {
+                    isBikeBooked = true;
                     ((Button) v).setText("CANCEL");
-                else if ("CANCEL".equals(((Button) v).getText().toString()))
+                    String[] text = ((TextView)((RelativeLayout) v.getParent()).findViewById(R.id.textViewChild)).getText().toString().split(": ");
+                    String t1 = text[0];
+                    int t2 = Integer.parseInt(text[1])+1;
+                    ((TextView)((RelativeLayout) v.getParent()).findViewById(R.id.textViewChild)).setText(t1 + ": " + t2);
+                }
+                else if ("CANCEL".equals(((Button) v).getText().toString())) {
+                    isBikeBooked = false;
                     ((Button) v).setText("BOOK");
+                }
             }
         });
-
-
 
         Button mapButton = (Button) convertView.findViewById(R.id.map_button);
         mapButton.setOnClickListener(new View.OnClickListener() {
@@ -144,5 +155,10 @@ public class MyExpandableAdapter extends BaseExpandableListAdapter {
     @Override
     public boolean isChildSelectable(int groupPosition, int childPosition) {
         return true;
+    }
+
+    @Override
+    public void notifyDataSetChanged() {
+        super.notifyDataSetChanged();
     }
 }

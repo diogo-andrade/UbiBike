@@ -4,8 +4,10 @@ import android.app.Activity;
 import android.content.Intent;
 import android.database.DataSetObserver;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AbsListView;
 import android.widget.Button;
@@ -16,7 +18,7 @@ import android.widget.TextView;
 import pt.ulisboa.tecnico.cmov.ubibike.adapters.ChatArrayAdapter;
 
 
-public class ChatActivity extends Activity {
+public class ChatActivity extends AppCompatActivity {
     private static final String TAG = "ChatActivity";
 
     private ChatArrayAdapter chatArrayAdapter;
@@ -30,12 +32,12 @@ public class ChatActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.chat_activity);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        TextView myTextView = (TextView)findViewById(R.id.toolbar_title);
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
             String name = extras.getString("pt.ulisboa.tecnico.cmov.ubibike.NAME");
-            myTextView.setText(name);
+            getSupportActionBar().setTitle(name);
         }
         buttonSend = (Button) findViewById(R.id.send);
 
@@ -79,6 +81,12 @@ public class ChatActivity extends Activity {
         chatArrayAdapter.add(new ChatMessage(side, chatText.getText().toString()));
         chatText.setText("");
         side = !side;
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        onBackPressed();
         return true;
     }
 }

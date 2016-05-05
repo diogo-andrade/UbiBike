@@ -8,25 +8,6 @@
     android:orientation="vertical"
     tools:context="pt.ulisboa.tecnico.cmov.ubibike.ChatActivity">
 
-
-    <android.support.v7.widget.Toolbar
-        android:id="@+id/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="?attr/colorPrimary">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Toolbar Title"
-            android:textStyle="bold"
-            android:textSize="20sp"
-            android:textColor="@color/colorWhite"
-            android:layout_gravity="center"
-            android:id="@+id/toolbar_title" />
-    </android.support.v7.widget.Toolbar>
-
-
     <ListView
         android:id="@+id/msgview"
         android:layout_width="fill_parent"

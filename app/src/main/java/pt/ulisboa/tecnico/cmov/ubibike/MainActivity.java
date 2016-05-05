@@ -1,18 +1,25 @@
 package pt.ulisboa.tecnico.cmov.ubibike;
 
+import android.Manifest;
 import android.app.DialogFragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Rect;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.AppCompatImageView;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -32,7 +39,7 @@ import android.widget.Toast;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener, LocationListener {
 
     Fragment fragment = null;
     FragmentManager fragmentManager = getSupportFragmentManager();
@@ -70,6 +77,13 @@ public class MainActivity extends AppCompatActivity
             fragment = new ProfileFragment().newInstance(args, args);
             fragmentManager.beginTransaction().replace(R.id.Content, fragment).commit();
         }
+
+        // Setup Location manager and receiver
+        LocationManager lManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        lManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 100, 1, this);
     }
 
     // Search for the Overflow icon and replace his color
@@ -202,6 +216,28 @@ public class MainActivity extends AppCompatActivity
 
     public void doNoClick() {
         // Do stuff here.
+    }
+
+    // Metodos relativos ao location
+    @Override
+    public void onLocationChanged(Location location) {
+        Toast.makeText(getBaseContext(), "selected Item Name is " + location.toString(), Toast.LENGTH_LONG).show();
+        Log.d("GPS", "Location Changed " + location.toString());
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+
     }
 
 }

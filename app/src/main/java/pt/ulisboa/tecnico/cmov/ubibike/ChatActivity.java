@@ -31,15 +31,12 @@ public class ChatActivity extends Activity {
 
         setContentView(R.layout.chat_activity);
 
-        Log.d("DEBUG","YO");
         TextView myTextView = (TextView)findViewById(R.id.toolbar_title);
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
-            Log.d("DEBUG", "YOyo");
-            String name = extras.getString("EXTRA_NAME");
+            String name = extras.getString("pt.ulisboa.tecnico.cmov.ubibike.NAME");
             myTextView.setText(name);
         }
-        Log.d("DEBUG", "YOYO");
         buttonSend = (Button) findViewById(R.id.send);
 
         listView = (ListView) findViewById(R.id.msgview);

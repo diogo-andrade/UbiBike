@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -94,8 +95,7 @@ public class NearUbikers extends Fragment {
                 TextView vName = (TextView) view.findViewById(R.id.ubibikerName);
                 TextView vEmail = (TextView) view.findViewById(R.id.ubibikerEmail);
                 Intent intent = new Intent(getContext(), ChatActivity.class);
-                intent.putExtra(EXTRA_NAME, vName.getText());
-                intent.putExtra(EXTRA_EMAIL, vEmail.getText());
+                intent.putExtra(EXTRA_NAME, vName.getText().toString());
                 startActivity(intent);
             }
         });

@@ -102,8 +102,11 @@
                 android:text="@string/action_create_account"
                 android:textStyle="bold"
                 android:background="@color/colorPrimary"
-                android:textColor="@color/colorWhite"/>
+                android:textColor="@color/colorWhite"
+                android:nestedScrollingEnabled="false"
+                android:clickable="true" />
 
         </LinearLayout>
     </ScrollView>
+
 </LinearLayout>

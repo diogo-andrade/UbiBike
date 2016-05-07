@@ -1,9 +1,11 @@
 package pt.ulisboa.tecnico.cmov.ubibike;
 
+import java.io.Serializable;
+
 /**
  * Created by gae on 03/05/2016.
  */
-public class ChatMessage {
+public class ChatMessage implements Serializable{
     public boolean left;
     public String message;
 

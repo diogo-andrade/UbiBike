@@ -47,8 +47,8 @@
                         android:paddingLeft="8dp"
                         android:paddingRight="8dp"
                         android:textAppearance="?android:attr/textAppearanceLarge"
-                        android:text="FIRST LAST NAME"
-                        android:id="@+id/name" />
+                        android:id="@+id/nameView"
+                        android:text="NAME" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -57,8 +57,8 @@
                         android:paddingRight="8dp"
                         android:paddingTop="8dp"
                         android:textAppearance="?android:attr/textAppearanceLarge"
-                        android:text="EMAIL"
-                        android:id="@+id/email"/>
+                        android:id="@+id/emailView"
+                        android:text="EMAIL" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -67,8 +67,8 @@
                         android:paddingRight="8dp"
                         android:paddingTop="8dp"
                         android:textAppearance="?android:attr/textAppearanceLarge"
-                        android:text="SCORE"
-                        android:id="@+id/score"/>
+                        android:id="@+id/scoreView"
+                        android:text="SCORE: " />
                 </LinearLayout>
             </LinearLayout>
         </ScrollView>

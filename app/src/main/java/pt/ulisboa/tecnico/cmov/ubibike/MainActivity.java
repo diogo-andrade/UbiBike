@@ -43,6 +43,9 @@ public class MainActivity extends AppCompatActivity
 
     Fragment fragment = null;
     FragmentManager fragmentManager = getSupportFragmentManager();
+    private String name_profile = "DEFAULT";
+    private String email_profile = "DEFAULT";
+    private String score_profile = "DEFAULT";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,8 +76,12 @@ public class MainActivity extends AppCompatActivity
         if (savedInstanceState == null) {
             navigationView.getMenu().getItem(0).setChecked(true);
             //TODO: fragment
-            String args = "test";
-            fragment = new ProfileFragment().newInstance(args, args);
+            if(getIntent().hasExtra("name")) {
+                name_profile = getIntent().getStringExtra("name");
+                email_profile = getIntent().getStringExtra("email");
+                score_profile = getIntent().getStringExtra("score");
+            }
+            fragment = new ProfileFragment().newInstance(name_profile, email_profile, score_profile);
             fragmentManager.beginTransaction().replace(R.id.Content, fragment).commit();
         }
 
@@ -154,8 +161,7 @@ public class MainActivity extends AppCompatActivity
         switch(item.getItemId()) {
             case R.id.nav_profile:
                 //TODO: fragment
-                String args = "test";
-                fragment = new ProfileFragment().newInstance(args, args);
+                fragment = new ProfileFragment().newInstance(name_profile, email_profile, score_profile);
                 isFragment = true;
                 break;
             case R.id.nav_ubibikers:

@@ -85,7 +85,7 @@ public class NearUbibikerAdapter extends ArrayAdapter {
         @Override
         public void onClick(View v) {
             AlertDialog.Builder builder = new AlertDialog.Builder((Activity) v.getContext());
-            builder.setTitle("Title");
+            builder.setTitle("Share Points");
 
             // Set up the input
             final EditText input = new EditText(getContext());

@@ -56,7 +56,7 @@
                         android:paddingLeft="8dp"
                         android:paddingRight="8dp"
                         android:paddingTop="8dp"
-                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:textAppearance="?android:attr/textAppearanceMedium"
                         android:id="@+id/emailView"
                         android:text="EMAIL" />
 

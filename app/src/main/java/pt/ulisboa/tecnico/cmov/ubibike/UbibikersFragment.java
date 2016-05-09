@@ -31,15 +31,6 @@ import java.util.Arrays;
 import pt.ulisboa.tecnico.cmov.ubibike.adapters.UbibikerAdapter;
 import pt.ulisboa.tecnico.cmov.ubibike.objects.Ubibiker;
 
-
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link UbibikersFragment.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link UbibikersFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class UbibikersFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER

@@ -101,6 +101,12 @@ public class RegisterActivity  extends AppCompatActivity {
             return false;
         }
 
+        if( pass.getText().toString().length() <= 4) {
+            confirm_pass.setError("Password too short");
+            confirm_pass.requestFocus();
+            return false;
+        }
+
         P_NAME=name.getText().toString();
         P_EMAIL=email.getText().toString();
         P_SCORE="0";

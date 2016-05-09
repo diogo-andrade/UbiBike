@@ -33,7 +33,6 @@ public class UBIClient {
         //read line from server
         String response[] = inFromServer.readLine().split("/EOM");
 
-
         System.out.println(response[0]);
 
         return response[0];

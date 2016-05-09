@@ -1,6 +1,7 @@
 package pt.ulisboa.tecnico.cmov.ubibike;
 
 import android.app.Activity;
+import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -11,6 +12,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 import android.view.View.OnClickListener;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 
 /**
  * Created by Loureiro on 13-04-2016.
@@ -24,6 +27,7 @@ public class RegisterActivity  extends AppCompatActivity {
     private Button btn;
     public static String P_NAME;
     public static String P_EMAIL;
+    public static String P_SCORE;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,9 +45,14 @@ public class RegisterActivity  extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if(createAccount()) {
-                    Toast.makeText(getApplicationContext(), "Account created!",
-                            Toast.LENGTH_SHORT).show();
-                    callProfileWindow();
+                    Toast.makeText(getApplicationContext(), "Welcome to UbiBikers!!!",
+                            Toast.LENGTH_LONG).show();
+                    Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                    intent.putExtra("name", P_NAME);
+                    intent.putExtra("email", P_EMAIL);
+                    intent.putExtra("score", P_SCORE);
+                    startActivity(intent);
+                    finish();
                 }
             }
         });
@@ -55,14 +64,6 @@ public class RegisterActivity  extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         onBackPressed();
         return true;
-    }
-
-    public void callProfileWindow() {
-        Intent intent = new Intent(this,ProfileFragment.class);
-        intent.putExtra("name", name.getText().toString());
-        intent.putExtra("email", email.getText().toString());
-        intent.putExtra("score", "0");
-        startActivity(intent);
     }
 
     public boolean createAccount() {
@@ -99,6 +100,10 @@ public class RegisterActivity  extends AppCompatActivity {
             confirm_pass.requestFocus();
             return false;
         }
+
+        P_NAME=name.getText().toString();
+        P_EMAIL=email.getText().toString();
+        P_SCORE="0";
 
         return true;
     }

@@ -15,6 +15,9 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import java.io.Serializable;
+import java.util.List;
+
 import pt.ulisboa.tecnico.cmov.ubibike.adapters.ChatArrayAdapter;
 
 
@@ -25,6 +28,7 @@ public class ChatActivity extends AppCompatActivity {
     private ListView listView;
     private EditText chatText;
     private Button buttonSend;
+    private static final String KEY_TEXT_VALUE = "chatText";
     private boolean side = false;
 
     @Override
@@ -39,12 +43,20 @@ public class ChatActivity extends AppCompatActivity {
             String name = extras.getString("pt.ulisboa.tecnico.cmov.ubibike.NAME");
             getSupportActionBar().setTitle(name);
         }
+
         buttonSend = (Button) findViewById(R.id.send);
 
         listView = (ListView) findViewById(R.id.msgview);
 
         chatArrayAdapter = new ChatArrayAdapter(getApplicationContext(), R.layout.right);
-        listView.setAdapter(chatArrayAdapter);
+        if (savedInstanceState != null) {
+            List<ChatMessage> list = (List<ChatMessage>)savedInstanceState.get("myList");
+            if (list != null) {
+                for(ChatMessage c : list){
+                    chatArrayAdapter.add(c);
+                }
+            }
+        }
 
         chatText = (EditText) findViewById(R.id.msg);
         chatText.setOnKeyListener(new View.OnKeyListener() {
@@ -73,6 +85,14 @@ public class ChatActivity extends AppCompatActivity {
                 listView.setSelection(chatArrayAdapter.getCount() - 1);
             }
         });
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        Log.d("DEBUG","vou guardar tudo!");
+        List<ChatMessage> list = chatArrayAdapter.getChatMessageList();
+        outState.putSerializable ("myList", (Serializable)list);
     }
 
 

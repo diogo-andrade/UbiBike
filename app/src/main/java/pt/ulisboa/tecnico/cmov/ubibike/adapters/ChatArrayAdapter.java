@@ -41,16 +41,28 @@ public class ChatArrayAdapter extends ArrayAdapter<ChatMessage> {
     }
 
     public View getView(int position, View convertView, ViewGroup parent) {
-        ChatMessage chatMessageObj = getItem(position);
         View row = convertView;
         LayoutInflater inflater = (LayoutInflater) this.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        for(ChatMessage msg : getChatMessageList()){
+            if(msg == this.chatMessageList.get(position)){ break;/* does nothing*/}
+
+            if (msg.left) {
+                row = inflater.inflate(R.layout.right, parent, false);
+            } else {
+                row = inflater.inflate(R.layout.left, parent, false);
+            }
+            chatText = (TextView) row.findViewById(R.id.msgr);
+            chatText.setText(msg.message);
+        }
+        ChatMessage chatMessageObj = getItem(position);
         if (chatMessageObj.left) {
             row = inflater.inflate(R.layout.right, parent, false);
-        }else{
+        } else {
             row = inflater.inflate(R.layout.left, parent, false);
         }
         chatText = (TextView) row.findViewById(R.id.msgr);
         chatText.setText(chatMessageObj.message);
         return row;
     }
+    public List<ChatMessage> getChatMessageList (){ return this.chatMessageList;}
 }

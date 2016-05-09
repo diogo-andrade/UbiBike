@@ -3,31 +3,28 @@ package pt.ulisboa.tecnico.cmov.ubibike;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.MenuItem;
-import android.widget.Toast;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+
 
 public class UbibikerProfileActivity extends AppCompatActivity {
 
-    private static final String EXTRA_NAME = "pt.ulisboa.tecnico.cmov.ubibike.NAME";
-    private static final String EXTRA_EMAIL = "pt.ulisboa.tecnico.cmov.ubibike.EMAIL";
+   /* private static final String EXTRA_NAME = "pt.ulisboa.tecnico.cmov.ubibike.NAME";
+    private static final String EXTRA_EMAIL = "pt.ulisboa.tecnico.cmov.ubibike.EMAIL";*/
+    private String name;
+    private String email;
+    private String score;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_ubibiker_profile);
-
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
-        Bundle extras = getIntent().getExtras();
-
-        String output = extras.getString(EXTRA_NAME);
-        Toast.makeText(getBaseContext(), "selected Item Name is " + output, Toast.LENGTH_LONG).show();
     }
 
 
-    @Override
+/*    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         onBackPressed();
         return true;
-    }
+    }*/
 }

@@ -2,6 +2,7 @@ package pt.ulisboa.tecnico.cmov.ubibike.adapters;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -12,6 +13,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.NumberPicker;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -84,29 +86,36 @@ public class NearUbibikerAdapter extends ArrayAdapter {
     private View.OnClickListener bttClickLinestener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            AlertDialog.Builder builder = new AlertDialog.Builder((Activity) v.getContext());
-            builder.setTitle("Title");
-
-            // Set up the input
-            final EditText input = new EditText(getContext());
-            input.setInputType(InputType.TYPE_CLASS_TEXT);
-            builder.setView(input);
-
-            // Set up the buttons
-            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    m_Text = input.getText().toString();
+            final Dialog d = new Dialog((Activity) v.getContext());
+            d.setTitle("Share Points");
+            d.setContentView(R.layout.dialog_points);
+            Button b1 = (Button) d.findViewById(R.id.button1);
+            Button b2 = (Button) d.findViewById(R.id.button2);
+            final NumberPicker np = (NumberPicker) d.findViewById(R.id.numberPicker1);
+            np.setMaxValue(99999999);
+            np.setMinValue(0);
+            np.setWrapSelectorWheel(false);
+            np.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
+                public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
+                    // Save the value in the number picker
+                    np.setValue(newVal);
                 }
             });
-            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            b1.setOnClickListener(new View.OnClickListener() {
                 @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    dialog.cancel();
+                public void onClick(View v) {
+                    //tv.setText(String.valueOf(np.getValue()));
+                    d.dismiss();
                 }
             });
+            b2.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    d.dismiss();
+                }
+            });
+            d.show();
 
-            builder.show();
         }
     };
 }

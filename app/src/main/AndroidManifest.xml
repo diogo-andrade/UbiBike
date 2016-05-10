@@ -71,6 +71,8 @@
         <activity
             android:name=".ChatActivity"
             android:label="@string/title_activity_chat"></activity>
+        <service
+            android:name="pt.inesc.termite.wifidirect.service.SimWifiP2pService" />
     </application>
 
 </manifest>

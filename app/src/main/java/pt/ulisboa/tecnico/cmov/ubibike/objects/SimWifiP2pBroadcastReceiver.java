@@ -35,7 +35,8 @@ public class SimWifiP2pBroadcastReceiver extends BroadcastReceiver {
             }
         } else if (SimWifiP2pBroadcast.WIFI_P2P_PEERS_CHANGED_ACTION.equals(action))
         {
-            //...
+            Toast.makeText(mActivity, "Peer list changed",
+                    Toast.LENGTH_SHORT).show();
         } else if (SimWifiP2pBroadcast.WIFI_P2P_NETWORK_MEMBERSHIP_CHANGED_ACTION.
                 equals(action)) {
             SimWifiP2pInfo ginfo = (SimWifiP2pInfo) intent.getSerializableExtra(

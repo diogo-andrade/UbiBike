@@ -1,9 +1,12 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context="pt.ulisboa.tecnico.cmov.ubibike.StationsFragment">
+    android:gravity="center_horizontal"
+    android:layout_weight="2"
+    android:orientation="vertical"
+    tools:context="pt.ulisboa.tecnico.cmov.ubibike.WifiActivity">
 
     <!-- TODO: Update blank fragment layout -->
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -22,4 +25,4 @@
             android:layout_height="wrap_content"
             android:text="Wifi Off" />
     </LinearLayout>
-</FrameLayout>
+</LinearLayout>

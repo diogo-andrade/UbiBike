@@ -41,19 +41,20 @@ import android.widget.Toast;
 import java.util.ArrayList;
 
 import pt.inesc.termite.wifidirect.SimWifiP2pBroadcast;
+import pt.inesc.termite.wifidirect.SimWifiP2pDeviceList;
 import pt.inesc.termite.wifidirect.SimWifiP2pManager;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketManager;
 import pt.ulisboa.tecnico.cmov.ubibike.objects.SimWifiP2pBroadcastReceiver;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, LocationListener {
+        implements NavigationView.OnNavigationItemSelectedListener, LocationListener,
+        SimWifiP2pManager.PeerListListener {
 
     Fragment fragment = null;
     FragmentManager fragmentManager = getSupportFragmentManager();
     private String name_profile = "DEFAULT";
     private String email_profile = "DEFAULT";
     private String score_profile = "DEFAULT";
-    private SimWifiP2pBroadcastReceiver mReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,8 +67,8 @@ public class MainActivity extends AppCompatActivity
         filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_PEERS_CHANGED_ACTION);
         filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_NETWORK_MEMBERSHIP_CHANGED_ACTION);
         filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_GROUP_OWNERSHIP_CHANGED_ACTION);
-        mReceiver = new SimWifiP2pBroadcastReceiver(this);
-        registerReceiver(mReceiver, filter);
+        ((UBIApplication) getApplication()).setReceiver(new SimWifiP2pBroadcastReceiver(this));
+        registerReceiver(((UBIApplication) getApplication()).getReceiver(), filter);
 
 
         setContentView(R.layout.activity_main);
@@ -161,11 +162,15 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.action_near_ubibikers) {
-            fragment = new NearUbikers().newInstance();
-            fragmentManager.beginTransaction().replace(R.id.Content, fragment).commit();
-            DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-            drawer.closeDrawer(GravityCompat.START);
-            return true;
+            if(((UBIApplication) getApplication()).getBound()){
+                fragment = new NearUbikers().newInstance();
+                ((UBIApplication) getApplication()).getManager().requestPeers(((UBIApplication) getApplication()).getChannel(), MainActivity.this);
+                fragmentManager.beginTransaction().replace(R.id.Content, fragment).commit();
+                DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+                drawer.closeDrawer(GravityCompat.START);
+                return true;
+            }
+
         }
 
         return super.onOptionsItemSelected(item);
@@ -195,8 +200,8 @@ public class MainActivity extends AppCompatActivity
                 break;
             case R.id.nav_wifi:
                 //TODO: activity
-                fragment = new WifiFragment().newInstance();
-                isFragment = true;
+                Intent intent = new Intent(this, WifiFragment.class);
+                this.startActivity(intent);
                 break;
             case R.id.nav_settings:
                 //TODO: activity
@@ -267,5 +272,9 @@ public class MainActivity extends AppCompatActivity
 
     }
 
+    @Override
+    public void onPeersAvailable(SimWifiP2pDeviceList simWifiP2pDeviceList) {
+
+    }
 }
 

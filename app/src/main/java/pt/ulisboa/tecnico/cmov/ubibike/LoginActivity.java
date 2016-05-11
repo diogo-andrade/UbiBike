@@ -4,10 +4,14 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.app.LoaderManager.LoaderCallbacks;
 
@@ -33,9 +37,13 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import pt.ulisboa.tecnico.cmov.ubibike.exceptions.ErrorCodeException;
 import pt.ulisboa.tecnico.cmov.ubibike.services.UBIClient;
 
 import static android.Manifest.permission.READ_CONTACTS;
@@ -50,13 +58,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
      */
     private static final int REQUEST_READ_CONTACTS = 0;
 
-    /**
-     * A dummy authentication store containing known user names and passwords.
-     * TODO: remove after connecting to a real authentication system.
-     */
-    private static final String[] DUMMY_CREDENTIALS = new String[]{
-            "foo@example.com:hello", "bar@example.com:world"
-    };
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
      */
@@ -155,6 +156,21 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
      * errors are presented and no actual login attempt is made.
      */
     private void attemptLogin() {
+        if(!isNetworkAvailable()){
+            AlertDialog alertDialog = new AlertDialog.Builder(this).create();
+            alertDialog.setTitle("Alert");
+            alertDialog.setMessage("You are not connected to the internet.");
+            alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    });
+            alertDialog.show();
+
+            return;
+        }
+
         if (mAuthTask != null) {
             return;
         }
@@ -171,8 +187,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         View focusView = null;
 
         // Check for a valid password, if the user entered one.
-        if (!TextUtils.isEmpty(password) && !isPasswordValid(password)) {
-            mPasswordView.setError(getString(R.string.error_invalid_password));
+        if (TextUtils.isEmpty(password)) {
+            mPasswordView.setError(getString(R.string.error_field_required));
             focusView = mPasswordView;
             cancel = true;
         }
@@ -309,6 +325,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
         private final String mEmail;
         private final String mPassword;
+        private int mErrorCode;
 
         UserLoginTask(String email, String password) {
             mEmail = email;
@@ -319,34 +336,16 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         protected Boolean doInBackground(Void... params) {
             // TODO: attempt authentication against a network service.
 
-          /*  try {
-                // Simulate network access.
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                return false;
-            }*/
-
             try {
-                UBIClient client = new UBIClient("104.196.28.216",8081);
-                String result = client.requestLogin(mEmail, mPassword);
+                String response = new UBIClient().requestLogin("http://10.0.2.2:5000/login?email="+mEmail+"&password="+mPassword);
 
-                client.close();
-
-                //Toast.makeText(getBaseContext(), "Message from server: " + result, Toast.LENGTH_LONG).show();
-                // Simulate network access.
-                Thread.sleep(2000);
+            } catch (ErrorCodeException e){
+                mErrorCode = e.getCode();
+                return false;
             } catch (Exception e) {
                 e.printStackTrace();
                 return false;
             }
-
-            /*for (String credential : DUMMY_CREDENTIALS) {
-                String[] pieces = credential.split(":");
-                if (pieces[0].equals(mEmail)) {
-                    // Account exists, return true if the password matches.
-                    return pieces[1].equals(mPassword);
-                }
-            }*/
 
             // TODO: register the new account here.
             return true;
@@ -360,11 +359,15 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 Intent intent = new Intent(getBaseContext(), MainActivity.class);
                 startActivity(intent);
                 finish();
-
             } else {
                 showProgress(false);
-                mPasswordView.setError(getString(R.string.error_incorrect_password));
-                mPasswordView.requestFocus();
+                if (mErrorCode == 401) {
+                    mPasswordView.setError(getString(R.string.error_incorrect_password));
+                    mPasswordView.requestFocus();
+                } else if (mErrorCode == 404) {
+                    mEmailView.setError(getString(R.string.error_incorrect_email));
+                    mEmailView.requestFocus();
+                }
             }
         }
 
@@ -374,5 +377,35 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             showProgress(false);
         }
     }
+
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null;
+    }
+
+    public boolean hasInternetAccess() {
+        if (isNetworkAvailable()) {
+            try {
+                HttpURLConnection urlc = (HttpURLConnection)
+                        (new URL("http://clients3.google.com/generate_204")
+                                .openConnection());
+                urlc.setRequestProperty("User-Agent", "Android");
+                urlc.setRequestProperty("Connection", "close");
+                urlc.setConnectTimeout(1500);
+                urlc.connect();
+                return (urlc.getResponseCode() == 204 &&
+                        urlc.getContentLength() == 0);
+            } catch (Exception e) {
+                Log.e("TAG", "Error checking internet connection", e);
+            }
+        } else {
+            Log.d("TAG", "No network available!");
+        }
+        return false;
+    }
+
+
 }
 

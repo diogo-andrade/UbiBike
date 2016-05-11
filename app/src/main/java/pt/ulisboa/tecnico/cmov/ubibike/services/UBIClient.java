@@ -1,44 +1,90 @@
 package pt.ulisboa.tecnico.cmov.ubibike.services;
 
+import android.util.Log;
+
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.Reader;
+import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
+import java.net.URL;
+
+import pt.ulisboa.tecnico.cmov.ubibike.exceptions.ErrorCodeException;
 
 /**
  * Created by diogo on 06-05-2016.
  */
 public class UBIClient {
-    private String _host;
-    private int _port;
-    private Socket _socket;
 
-    public  UBIClient(String host, int port) throws Exception {
-        this._host = host;
-        this._port = port;
-        this._socket = new Socket(_host, _port);
+
+    public  UBIClient() {
+
     }
 
-    public String requestLogin(String email, String password) throws Exception {
-        _socket.setSoTimeout(30000);
-        //create output stream attached to socket
-        PrintWriter outToServer = new PrintWriter(new OutputStreamWriter(_socket.getOutputStream()));
-        //send msg to server
-        outToServer.print("LOGIN"+" " + email + " " + password + "/EOM");
-        outToServer.flush();
+    public String requestLogin(String email, String password) {
 
-        BufferedReader inFromServer = new BufferedReader(new InputStreamReader(_socket.getInputStream()));
-        //read line from server
-        String response[] = inFromServer.readLine().split("/EOM");
-
-        System.out.println(response[0]);
-
-        return response[0];
+        return null;
     }
 
-    public void close() throws IOException {
-        _socket.close();
+    public String requestRegister(String name, String email, String password) {
+
+
+
+        return "";
+    }
+
+    public String requestLogin(String myurl) throws Exception {
+        InputStream is = null;
+        // Only display the first 500 characters of the retrieved
+        // web page content.
+        int len = 500;
+
+        try {
+            URL url = new URL(myurl);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setReadTimeout(10000 /* milliseconds */);
+            conn.setConnectTimeout(15000 /* milliseconds */);
+            conn.setRequestMethod("GET");
+            conn.setDoInput(true);
+            // Starts the query
+            conn.connect();
+            int response = conn.getResponseCode();
+            Log.d("TAG", "The response is: " + response);
+            String result = null;
+            if (response == 200) {
+                is = conn.getInputStream();
+                // Convert the InputStream into a string
+                result = readIt(is, len);
+            } else
+                throw new ErrorCodeException(response); // throw error code
+
+            return result;
+            // Makes sure that the InputStream is closed after the app is
+            // finished using it.
+        } finally {
+            if (is != null) {
+                is.close();
+            }
+        }
+    }
+
+    // Reads an InputStream and converts it to a String.
+    public String readIt(InputStream stream, int len) throws IOException {
+        char[] buffer = new char[len];
+        StringBuilder out = new StringBuilder();
+        Reader in = new InputStreamReader(stream, "UTF-8");
+            for (;;) {
+                int rsz = in.read(buffer, 0, buffer.length);
+                if (rsz < 0)
+                    break;
+                out.append(buffer, 0, rsz);
+            }
+        return out.toString();
     }
 }

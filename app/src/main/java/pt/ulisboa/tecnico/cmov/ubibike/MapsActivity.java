@@ -93,4 +93,5 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.addMarker(new MarkerOptions().position(endPoint));
         mMap.addPolyline(line);
     }
+
 }

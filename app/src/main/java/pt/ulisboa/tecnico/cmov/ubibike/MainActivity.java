@@ -273,8 +273,8 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onPeersAvailable(SimWifiP2pDeviceList simWifiP2pDeviceList) {
-
+    public void onPeersAvailable(SimWifiP2pDeviceList peers) {
+        //TODO - function that returns the list of devices in range of wifi
     }
 }
 

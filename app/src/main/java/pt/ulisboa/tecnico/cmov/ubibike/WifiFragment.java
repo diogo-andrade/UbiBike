@@ -4,6 +4,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Messenger;
@@ -15,6 +16,11 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 
 import pt.inesc.termite.wifidirect.SimWifiP2pBroadcast;
 import pt.inesc.termite.wifidirect.SimWifiP2pDevice;
@@ -23,6 +29,8 @@ import pt.inesc.termite.wifidirect.SimWifiP2pManager.Channel;
 import pt.inesc.termite.wifidirect.service.SimWifiP2pService;
 import pt.inesc.termite.wifidirect.SimWifiP2pDeviceList;
 import pt.inesc.termite.wifidirect.SimWifiP2pManager.PeerListListener;
+import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
+import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
 
 /**
  * Created by gae on 10/05/2016.
@@ -58,10 +66,60 @@ public class WifiFragment extends AppCompatActivity {
             findViewById(R.id.idWifiOffButton).setEnabled(true);
 
             v.findViewById(R.id.idWifiOnButton).setEnabled(false);
+            new IncommingCommTask().executeOnExecutor(
+                    AsyncTask.THREAD_POOL_EXECUTOR);
 
 
         }
     };
+
+    public class IncommingCommTask extends AsyncTask<Void, String, Void> {
+
+        @Override
+        protected Void doInBackground(Void... params) {
+
+            Log.d("YO", "IncommingCommTask started (" + this.hashCode() + ").");
+
+            try {
+                ((UBIApplication) getApplication()).setServer(new SimWifiP2pSocketServer(
+                        Integer.parseInt(getString(R.string.port))));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            while (!Thread.currentThread().isInterrupted()) {
+                try {
+                    SimWifiP2pSocket sock = ((UBIApplication) getApplication()).getServer().accept();
+                    try {
+                        BufferedReader sockIn = new BufferedReader(
+                                new InputStreamReader(sock.getInputStream()));
+                        String st = sockIn.readLine();
+                        publishProgress(st);
+                        if(st.equals("Request")){
+                            Toast.makeText(getBaseContext(), "oiii", Toast.LENGTH_LONG).show();
+                        }
+                        else if(st.startsWith("InfoProfile")){
+                            //extract info from the message and added to near ubibikers list
+                        }
+                        sock.getOutputStream().write(("\n").getBytes());
+                    } catch (IOException e) {
+                        Log.d("Error reading socket:", e.getMessage());
+                    } finally {
+                        sock.close();
+                    }
+                } catch (IOException e) {
+                    Log.d("Error socket:", e.getMessage());
+                    break;
+                    //e.printStackTrace();
+                }
+            }
+            return null;
+        }
+
+        @Override
+        protected void onProgressUpdate(String... values) {
+
+        }
+    }
 
     private View.OnClickListener listenerWifiOffButton = new View.OnClickListener() {
         public void onClick(View v){

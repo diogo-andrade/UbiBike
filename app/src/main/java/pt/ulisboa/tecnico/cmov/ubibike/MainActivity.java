@@ -69,7 +69,6 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // initialize the Termite API
-        SimWifiP2pSocketManager.Init(getApplicationContext());
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_STATE_CHANGED_ACTION);
@@ -173,10 +172,10 @@ public class MainActivity extends AppCompatActivity
         if (id == R.id.action_near_ubibikers) {
             if(((UBIApplication) getApplication()).getBound()){
                 fragment = new NearUbikers().newInstance();
-                ((UBIApplication) getApplication()).getManager().requestPeers(((UBIApplication) getApplication()).getChannel(), MainActivity.this);
                 fragmentManager.beginTransaction().replace(R.id.Content, fragment).commit();
                 DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
                 drawer.closeDrawer(GravityCompat.START);
+                ((UBIApplication) getApplication()).getManager().requestPeers(((UBIApplication) getApplication()).getChannel(), MainActivity.this);
                 return true;
             }
             else{

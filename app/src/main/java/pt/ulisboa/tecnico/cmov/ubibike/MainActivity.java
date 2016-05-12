@@ -37,6 +37,7 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
@@ -59,15 +60,28 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, LocationListener,
         SimWifiP2pManager.PeerListListener {
 
+    private static final String EXTRA_NAME = "pt.ulisboa.tecnico.cmov.ubibike.NAME";
+    private static final String EXTRA_EMAIL = "pt.ulisboa.tecnico.cmov.ubibike.EMAIL";
+    private static final String EXTRA_SCORE = "pt.ulisboa.tecnico.cmov.ubibike.SCORE";
+
     Fragment fragment = null;
     FragmentManager fragmentManager = getSupportFragmentManager();
-    private String name_profile = "DEFAULT";
-    private String email_profile = "DEFAULT";
-    private String score_profile = "DEFAULT";
+    private String mName = "DEFAULT";
+    private String mEmail = "DEFAULT";
+    private String mScore = "DEFAULT";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Bundle extras = getIntent().getExtras();
+
+        if (extras != null) {
+            mName= getIntent().getStringExtra(EXTRA_NAME);
+            mEmail = getIntent().getStringExtra(EXTRA_EMAIL);
+            mScore = getIntent().getStringExtra(EXTRA_SCORE);
+        }
+
         // initialize the Termite API
         SimWifiP2pSocketManager.Init(getApplicationContext());
 
@@ -102,16 +116,16 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        View navHeaderView= navigationView.inflateHeaderView(R.layout.nav_header_main);
+        TextView tvHeaderName= (TextView) navHeaderView.findViewById(R.id.header_name);
+        tvHeaderName.setText(mName);
+
         //Set profile as Home fragment
         if (savedInstanceState == null) {
             navigationView.getMenu().getItem(0).setChecked(true);
             //TODO: fragment
-            if(getIntent().hasExtra("name")) {
-                name_profile = getIntent().getStringExtra("name");
-                email_profile = getIntent().getStringExtra("email");
-                score_profile = getIntent().getStringExtra("score");
-            }
-            fragment = new ProfileFragment().newInstance(name_profile, email_profile, score_profile);
+
+            fragment = new ProfileFragment().newInstance(mName, mEmail, mScore);
             fragmentManager.beginTransaction().replace(R.id.Content, fragment).commit();
         }
 
@@ -195,7 +209,7 @@ public class MainActivity extends AppCompatActivity
         switch(item.getItemId()) {
             case R.id.nav_profile:
                 //TODO: fragment
-                fragment = new ProfileFragment().newInstance(name_profile, email_profile, score_profile);
+                fragment = new ProfileFragment().newInstance(mName, mEmail, mScore);
                 isFragment = true;
                 break;
             case R.id.nav_ubibikers:
@@ -245,7 +259,7 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         }
-        return super.dispatchTouchEvent( event );
+        return super.dispatchTouchEvent(event);
     }
 
     // Methods invoked by LogoutDialogAlertFragment

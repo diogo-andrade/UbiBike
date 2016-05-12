@@ -20,6 +20,10 @@ import android.view.View.OnClickListener;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 
+import org.json.JSONObject;
+
+import pt.ulisboa.tecnico.cmov.ubibike.exceptions.ErrorCodeException;
+import pt.ulisboa.tecnico.cmov.ubibike.objects.Ubibiker;
 import pt.ulisboa.tecnico.cmov.ubibike.services.UBIClient;
 
 /**
@@ -27,17 +31,21 @@ import pt.ulisboa.tecnico.cmov.ubibike.services.UBIClient;
  */
 public class RegisterActivity  extends AppCompatActivity {
 
-    private EditText name;
-    private EditText email;
-    private EditText pass;
-    private EditText confirm_pass;
+    private static final String EXTRA_NAME = "pt.ulisboa.tecnico.cmov.ubibike.NAME";
+    private static final String EXTRA_EMAIL = "pt.ulisboa.tecnico.cmov.ubibike.EMAIL";
+    private static final String EXTRA_SCORE = "pt.ulisboa.tecnico.cmov.ubibike.SCORE";
+    private static final String EXTRA_PASSWORD = "pt.ulisboa.tecnico.cmov.ubibike.PASSWORD";
+
+    private EditText nameView;
+    private EditText emailView;
+    private EditText passView;
+    private EditText confirm_passView;
     private Button btn;
-    public static String P_NAME;
-    public static String P_EMAIL;
-    public static String P_SCORE;
+
     private UserRegisterTask mRegTask = null;
     private View mProgressView;
     private View mRegFormView;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,10 +53,10 @@ public class RegisterActivity  extends AppCompatActivity {
         setContentView(R.layout.activity_register);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        name = (EditText) findViewById(R.id.name);
-        email = (EditText) findViewById(R.id.email);
-        pass = (EditText) findViewById(R.id.password);
-        confirm_pass = (EditText) findViewById(R.id.confirm_password);
+        nameView = (EditText) findViewById(R.id.name);
+        emailView = (EditText) findViewById(R.id.email);
+        passView = (EditText) findViewById(R.id.password);
+        confirm_passView = (EditText) findViewById(R.id.confirm_password);
         btn = (Button) findViewById(R.id.create_account_button);
 
         btn.setOnClickListener(new OnClickListener() {
@@ -56,7 +64,7 @@ public class RegisterActivity  extends AppCompatActivity {
             public void onClick(View view) {
                 if(createAccount()) {
                     showProgress(true);
-                    mRegTask = new UserRegisterTask(name.getText().toString(), email.getText().toString(), pass.getText().toString());
+                    mRegTask = new UserRegisterTask(nameView.getText().toString(), emailView.getText().toString(), passView.getText().toString());
                     mRegTask.execute((Void) null);
                 }
             }
@@ -73,49 +81,45 @@ public class RegisterActivity  extends AppCompatActivity {
     }
 
     public boolean createAccount() {
-        name.setError(null);
-        email.setError(null);
-        pass.setError(null);
-        confirm_pass.setError(null);
+        nameView.setError(null);
+        emailView.setError(null);
+        passView.setError(null);
+        confirm_passView.setError(null);
 
-        if(name.getText().toString().isEmpty()) {
-            name.setError("This field is required");
-            name.requestFocus();
+        if(nameView.getText().toString().isEmpty()) {
+            nameView.setError(getString(R.string.error_field_required));
+            nameView.requestFocus();
             return false;
         }
 
-        if(email.getText().toString().isEmpty()) {
-            email.setError("This field is required");
-            email.requestFocus();
+        if(emailView.getText().toString().isEmpty()) {
+            emailView.setError(getString(R.string.error_field_required));
+            emailView.requestFocus();
             return false;
         }
 
-        if(pass.getText().toString().isEmpty()) {
-            pass.setError("This field is required");
-            pass.requestFocus();
+        if(passView.getText().toString().isEmpty()) {
+            passView.setError(getString(R.string.error_field_required));
+            passView.requestFocus();
             return false;
         }
 
-        if(confirm_pass.getText().toString().isEmpty()) {
-            confirm_pass.setError("This field is required");
-            confirm_pass.requestFocus();
+        if(confirm_passView.getText().toString().isEmpty()) {
+            confirm_passView.setError(getString(R.string.error_field_required));
+            confirm_passView.requestFocus();
             return false;
         }
-        else if(!( pass.getText().toString()).equals( confirm_pass.getText().toString())) {
-            confirm_pass.setError("Password doesn't match");
-            confirm_pass.requestFocus();
-            return false;
-        }
-
-        if( pass.getText().toString().length() <= 4) {
-            confirm_pass.setError("Password too short");
-            confirm_pass.requestFocus();
+        else if(!( passView.getText().toString()).equals( confirm_passView.getText().toString())) {
+            confirm_passView.setError("Password doesn't match");
+            confirm_passView.requestFocus();
             return false;
         }
 
-        P_NAME=name.getText().toString();
-        P_EMAIL=email.getText().toString();
-        P_SCORE="0";
+        if( passView.getText().toString().length() <= 4) {
+            confirm_passView.setError("Password too short");
+            confirm_passView.requestFocus();
+            return false;
+        }
 
         return true;
     }
@@ -158,6 +162,8 @@ public class RegisterActivity  extends AppCompatActivity {
         private final String mName;
         private final String mEmail;
         private final String mPassword;
+        private int mErrorCode;
+        private Ubibiker user;
 
         UserRegisterTask(String name, String email, String password) {
             mName = name;
@@ -167,36 +173,26 @@ public class RegisterActivity  extends AppCompatActivity {
 
         @Override
         protected Boolean doInBackground(Void... params) {
-            // TODO: attempt authentication against a network service.
+            try {
+                String response = new UBIClient().GET("http://10.0.2.2:5000/register?name=" + mName.replaceAll(" ", "%20") + "&email=" + mEmail + "&password=" + mPassword);
 
-          /*  try {
-                // Simulate network access.
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
+                JSONObject mObject = new JSONObject(response.toString());
+
+                String name = mObject.getString("name");
+                String email = mObject.getString("email");
+                int score = mObject.getInt("points");
+                user = new Ubibiker(name, email);
+                user.setPoints(score);
+
+
+
+            } catch (ErrorCodeException e){
+                mErrorCode = e.getCode();
                 return false;
-            }*/
-        //TODO: uncomment this
-          /*  try {
-                UBIClient client = new UBIClient("104.196.28.216",8081);
-                //String result = client.requestLogin(mEmail, mPassword);
-
-                client.close();
-
-                Thread.sleep(2000);
             } catch (Exception e) {
                 e.printStackTrace();
                 return false;
-            }*/
-
-            /*for (String credential : DUMMY_CREDENTIALS) {
-                String[] pieces = credential.split(":");
-                if (pieces[0].equals(mEmail)) {
-                    // Account exists, return true if the password matches.
-                    return pieces[1].equals(mPassword);
-                }
-            }*/
-
-            // TODO: register the new account here.
+            }
             return true;
         }
 
@@ -205,17 +201,25 @@ public class RegisterActivity  extends AppCompatActivity {
             mRegTask = null;
 
             if (success) {
-                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                intent.putExtra("name", P_NAME);
-                intent.putExtra("email", P_EMAIL);
-                intent.putExtra("score", P_SCORE);
+                Toast.makeText(getApplication(), "Your account has been sucessfully created",
+                        Toast.LENGTH_LONG).show();
+
+                Intent intent = new Intent(getBaseContext(), LoginActivity.class);
+                intent.putExtra(EXTRA_NAME, user.getName());
+                intent.putExtra(EXTRA_EMAIL, user.getEmail());
+                intent.putExtra(EXTRA_SCORE, user.getPoints()+ "");
+                intent.putExtra(EXTRA_PASSWORD, passView.getText().toString());
                 startActivity(intent);
                 finish();
 
             } else {
                 showProgress(false);
-                email.setError("This email is already in use");
-                email.requestFocus();
+                if (mErrorCode == 409) {
+                    emailView.setError(getString(R.string.error_email_conflict));
+                    emailView.requestFocus();
+                } else if (mErrorCode == 400) {
+                    //Bad Request
+                }
             }
         }
 

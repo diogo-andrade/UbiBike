@@ -40,9 +40,9 @@ public class ProfileFragment extends Fragment {
     LocalActivityManager mLocalActivityManager;
 
     // TODO: Rename and change types of parameters
-    private String p_name;
-    private String p_email;
-    private String p_score;
+    private String mName;
+    private String mEmail;
+    private String mScore;
 
     //private OnFragmentInteractionListener mListener;
 
@@ -74,9 +74,9 @@ public class ProfileFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            p_name = getArguments().getString(ARG_PARAM1);
-            p_email = getArguments().getString(ARG_PARAM2);
-            p_score = getArguments().getString(ARG_PARAM3);
+            mName = getArguments().getString(ARG_PARAM1);
+            mEmail = getArguments().getString(ARG_PARAM2);
+            mScore = getArguments().getString(ARG_PARAM3);
         }
     }
 
@@ -90,11 +90,11 @@ public class ProfileFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_profile, container, false);
 
         TextView t1 = (TextView)rootView.findViewById(R.id.nameView);
-        t1.setText(p_name);
+        t1.setText(mName);
         TextView t2 = (TextView)rootView.findViewById(R.id.emailView);
-        t2.setText(p_email);
+        t2.setText(mEmail);
         TextView t3 = (TextView)rootView.findViewById(R.id.scoreView);
-        t3.setText("SCORE: "+ p_score);
+        t3.setText("SCORE: "+ mScore);
 
         mTabHost = (TabHost) rootView.findViewById(R.id.tabHost);
         mLocalActivityManager = new LocalActivityManager(getActivity(),false);

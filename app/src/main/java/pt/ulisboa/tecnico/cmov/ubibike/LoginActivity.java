@@ -37,6 +37,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -44,6 +46,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import pt.ulisboa.tecnico.cmov.ubibike.exceptions.ErrorCodeException;
+import pt.ulisboa.tecnico.cmov.ubibike.objects.Ubibiker;
 import pt.ulisboa.tecnico.cmov.ubibike.services.UBIClient;
 
 import static android.Manifest.permission.READ_CONTACTS;
@@ -53,6 +56,10 @@ import static android.Manifest.permission.READ_CONTACTS;
  */
 public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<Cursor> {
 
+    private static final String EXTRA_NAME = "pt.ulisboa.tecnico.cmov.ubibike.NAME";
+    private static final String EXTRA_EMAIL = "pt.ulisboa.tecnico.cmov.ubibike.EMAIL";
+    private static final String EXTRA_SCORE = "pt.ulisboa.tecnico.cmov.ubibike.SCORE";
+    private static final String EXTRA_PASSWORD = "pt.ulisboa.tecnico.cmov.ubibike.PASSWORD";
     /**
      * Id to identity READ_CONTACTS permission request.
      */
@@ -69,9 +76,24 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private View mProgressView;
     private View mLoginFormView;
 
+    private String mName = "";
+    private String mEmail = "";
+    private String mScore = "";
+    private String mPassword = "";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Bundle extras = getIntent().getExtras();
+
+        if (extras != null) {
+            mName= getIntent().getStringExtra(EXTRA_NAME);
+            mEmail = getIntent().getStringExtra(EXTRA_EMAIL);
+            mScore = getIntent().getStringExtra(EXTRA_SCORE);
+            mPassword = getIntent().getStringExtra(EXTRA_PASSWORD);
+        }
+
         setContentView(R.layout.activity_login);
         setTitle(R.string.title_activity_login);
         // Set up the login form.
@@ -100,6 +122,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
+        mEmailView.setText(mEmail);
+        mPasswordView.setText(mPassword);
     }
 
     public void callRegisterUser(View v) {
@@ -148,6 +172,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             }
         }
     }
+
 
 
     /**
@@ -326,6 +351,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         private final String mEmail;
         private final String mPassword;
         private int mErrorCode;
+        private Ubibiker user;
 
         UserLoginTask(String email, String password) {
             mEmail = email;
@@ -334,10 +360,16 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
         @Override
         protected Boolean doInBackground(Void... params) {
-            // TODO: attempt authentication against a network service.
-
             try {
-                String response = new UBIClient().requestLogin("http://10.0.2.2:5000/login?email="+mEmail+"&password="+mPassword);
+                String response = new UBIClient().GET("http://10.0.2.2:5000/login?email="+mEmail+"&password="+mPassword);
+
+                JSONObject mObject = new JSONObject(response.toString());
+
+                String name = mObject.getString("name");
+                String email = mObject.getString("email");
+                int score = mObject.getInt("points");
+                user = new Ubibiker(name, email);
+                user.setPoints(score);
 
             } catch (ErrorCodeException e){
                 mErrorCode = e.getCode();
@@ -346,8 +378,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 e.printStackTrace();
                 return false;
             }
-
-            // TODO: register the new account here.
             return true;
         }
 
@@ -357,6 +387,9 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
             if (success) {
                 Intent intent = new Intent(getBaseContext(), MainActivity.class);
+                intent.putExtra(EXTRA_NAME, user.getName());
+                intent.putExtra(EXTRA_EMAIL, user.getEmail());
+                intent.putExtra(EXTRA_SCORE, user.getPoints()+"");
                 startActivity(intent);
                 finish();
             } else {
@@ -367,6 +400,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 } else if (mErrorCode == 404) {
                     mEmailView.setError(getString(R.string.error_incorrect_email));
                     mEmailView.requestFocus();
+                } else if (mErrorCode == 400) {
+                    //Bad Request
                 }
             }
         }

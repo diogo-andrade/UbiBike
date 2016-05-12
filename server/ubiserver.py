@@ -31,6 +31,13 @@ class Ubibiker():
       "tracks": self.tracks
     }
 
+  def serialize_profile(self):
+    return {
+      "name": self.name,
+      "email": self.email,
+      "points": self.points
+    }
+
 @app.route("/")
 def hello():
   return "Hello World!"
@@ -44,7 +51,8 @@ def login():
     password = request.args.get('password')
     if email in ds.ubibikers:
       if ds.ubibikers[email].password == password:
-        return "Login OK"
+        ubibiker = ds.ubibikers[email]
+        return jsonify(ubibiker.serialize_profile())
       else:
         abort(401) # wrong password
     else:

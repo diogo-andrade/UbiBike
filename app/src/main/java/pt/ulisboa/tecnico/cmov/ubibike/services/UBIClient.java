@@ -14,6 +14,7 @@ import java.net.HttpURLConnection;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.net.URL;
+import java.net.URLEncoder;
 
 import pt.ulisboa.tecnico.cmov.ubibike.exceptions.ErrorCodeException;
 
@@ -27,25 +28,50 @@ public class UBIClient {
 
     }
 
-    public String requestLogin(String email, String password) {
 
-        return null;
-    }
-
-    public String requestRegister(String name, String email, String password) {
-
-
-
-        return "";
-    }
-
-    public String requestLogin(String myurl) throws Exception {
+    public String requestRegister(String myurl) throws Exception {
         InputStream is = null;
         // Only display the first 500 characters of the retrieved
         // web page content.
         int len = 500;
 
         try {
+            URL url = new URL(myurl);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setReadTimeout(10000 /* milliseconds */);
+            conn.setConnectTimeout(15000 /* milliseconds */);
+            conn.setRequestMethod("GET");
+            conn.setDoInput(true);
+            // Starts the query
+            conn.connect();
+            int response = conn.getResponseCode();
+            Log.d("TAG", "The response is: " + response);
+            String result = null;
+            if (response == 200) {
+                is = conn.getInputStream();
+                // Convert the InputStream into a string
+                result = readIt(is, len);
+            } else
+                throw new ErrorCodeException(response); // throw error code
+
+            return result;
+            // Makes sure that the InputStream is closed after the app is
+            // finished using it.
+        } finally {
+            if (is != null) {
+                is.close();
+            }
+        }
+    }
+
+    public String GET(String myurl) throws Exception {
+        InputStream is = null;
+        // Only display the first 500 characters of the retrieved
+        // web page content.
+        int len = 500;
+
+        try {
+
             URL url = new URL(myurl);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setReadTimeout(10000 /* milliseconds */);

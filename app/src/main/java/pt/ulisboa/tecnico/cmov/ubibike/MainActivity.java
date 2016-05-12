@@ -83,7 +83,6 @@ public class MainActivity extends AppCompatActivity
         }
 
         // initialize the Termite API
-        SimWifiP2pSocketManager.Init(getApplicationContext());
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_STATE_CHANGED_ACTION);
@@ -187,11 +186,14 @@ public class MainActivity extends AppCompatActivity
         if (id == R.id.action_near_ubibikers) {
             if(((UBIApplication) getApplication()).getBound()){
                 fragment = new NearUbikers().newInstance();
-                ((UBIApplication) getApplication()).getManager().requestPeers(((UBIApplication) getApplication()).getChannel(), MainActivity.this);
                 fragmentManager.beginTransaction().replace(R.id.Content, fragment).commit();
                 DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
                 drawer.closeDrawer(GravityCompat.START);
+                ((UBIApplication) getApplication()).getManager().requestPeers(((UBIApplication) getApplication()).getChannel(), MainActivity.this);
                 return true;
+            }
+            else{
+                Toast.makeText(getBaseContext(), "Service not bound", Toast.LENGTH_LONG).show();
             }
 
         }
@@ -291,6 +293,12 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    public void onPause() {
+        super.onPause();
+        unregisterReceiver(((UBIApplication) getApplication()).getReceiver());
+    }
+
+    @Override
     public void onProviderDisabled(String provider) {
 
     }
@@ -316,6 +324,12 @@ public class MainActivity extends AppCompatActivity
                                 new InputStreamReader(sock.getInputStream()));
                         String st = sockIn.readLine();
                         publishProgress(st);
+                        if(st.equals("Request")){
+                            Toast.makeText(getBaseContext(), "oiii", Toast.LENGTH_LONG).show();
+                        }
+                        else if(st.startsWith("InfoProfile")){
+                            //extract info from the message and added to near ubibikers list
+                        }
                         sock.getOutputStream().write(("\n").getBytes());
                     } catch (IOException e) {
                         Log.d("Error reading socket:", e.getMessage());
@@ -357,6 +371,32 @@ public class MainActivity extends AppCompatActivity
             //
         }
     }
+
+    public class SendCommTask extends AsyncTask<String, String, Void> {
+
+        @Override
+        protected Void doInBackground(String... msg) {
+            try {
+                ((UBIApplication) getApplication()).getSocket().getOutputStream().write((msg[0] + "\n").getBytes());
+                BufferedReader sockIn = new BufferedReader(
+                        new InputStreamReader(((UBIApplication) getApplication()).getSocket().getInputStream()));
+                sockIn.readLine();
+                ((UBIApplication) getApplication()).getSocket().close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            ((UBIApplication) getApplication()).setSocket(null);
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+          //
+        }
+    }
+
+
+
     @Override
     public void onPeersAvailable(SimWifiP2pDeviceList peers) {
         //TODO - function that returns the list of devices in range of wifi
@@ -366,9 +406,12 @@ public class MainActivity extends AppCompatActivity
         for (SimWifiP2pDevice device : peers.getDeviceList()) {
             String devstr = "" + device.deviceName + " (" + device.getVirtIp() + ")\n";
             peersStr.append(devstr);
-            new OutgoingCommTask().executeOnExecutor(
+            /*new OutgoingCommTask().executeOnExecutor(
                     AsyncTask.THREAD_POOL_EXECUTOR,
-                    device.getVirtIp());
+                    device.getVirtIp());*/
+            new SendCommTask().executeOnExecutor(
+                    AsyncTask.THREAD_POOL_EXECUTOR,
+                    "Request");
         }
 
         // display list of devices in range

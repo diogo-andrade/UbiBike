@@ -36,4 +36,9 @@ public class UbibikerProfileActivity extends AppCompatActivity {
         onBackPressed();
         return true;
     }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+    }
 }

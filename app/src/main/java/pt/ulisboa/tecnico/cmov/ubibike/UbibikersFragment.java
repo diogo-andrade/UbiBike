@@ -25,11 +25,17 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 
 import pt.ulisboa.tecnico.cmov.ubibike.adapters.UbibikerAdapter;
+import pt.ulisboa.tecnico.cmov.ubibike.exceptions.ErrorCodeException;
 import pt.ulisboa.tecnico.cmov.ubibike.objects.Ubibiker;
+import pt.ulisboa.tecnico.cmov.ubibike.services.UBIClient;
 
 public class UbibikersFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
@@ -39,10 +45,14 @@ public class UbibikersFragment extends Fragment {
     private static final String EXTRA_EMAIL = "pt.ulisboa.tecnico.cmov.ubibike.EMAIL";
 
     private static final String STATE_ITEMS="items";
+    private static final String STATE_VISIBLE="visible";
 
     private QueryTask mQueryTask;
     private View mProgressView;
     private ListView listView;
+    TextView noResults;
+
+    private boolean mFoundResults;
 
     private ArrayList<Ubibiker> mItems;
     private ArrayAdapter<String> mAdapter;
@@ -71,6 +81,16 @@ public class UbibikersFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // On screen rotation loads ListView items previously searched
+        if (savedInstanceState != null) {
+            mItems = (ArrayList<Ubibiker>) savedInstanceState.getSerializable(STATE_ITEMS);
+            mFoundResults = (boolean)  savedInstanceState.getSerializable(STATE_VISIBLE);
+
+        } else {
+            mFoundResults = true;
+            mItems = new ArrayList<>();
+        }
     }
 
     @Override
@@ -85,23 +105,30 @@ public class UbibikersFragment extends Fragment {
     public void onViewCreated (View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // On screen rotation loads ListView items previously searched
-        if (savedInstanceState != null) {
-            mItems = (ArrayList<Ubibiker>) savedInstanceState.getSerializable(STATE_ITEMS);
-        } else {
-            mItems = new ArrayList<>();
-        }
         mProgressView =   getActivity().findViewById(R.id.search_progress);
         listView = (ListView) getActivity().findViewById(R.id.listUbibikersView);
+
+        noResults = (TextView) getActivity().findViewById(R.id.no_results);
+
+        if(mFoundResults) {
+            noResults.setVisibility(View.GONE);
+        } else {
+            noResults.setVisibility(View.VISIBLE);
+        }
+
+        mAdapter = new UbibikerAdapter(getActivity().getBaseContext(),R.layout.ubibiker_list_item, mItems);
+        listView.setAdapter(mAdapter);
 
         SearchView sv = (SearchView) view.findViewById(R.id.searchView);
         sv.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
 
             @Override
             public boolean onQueryTextSubmit(String query) {
+                mFoundResults = false;
+                noResults.setVisibility(View.GONE);
                 showProgress(true);
                 mQueryTask = new QueryTask(query);
-                mQueryTask.execute();
+                mQueryTask.execute((Void) null);
 
                 return true;
             }
@@ -112,15 +139,15 @@ public class UbibikersFragment extends Fragment {
             }
         });
 
-        mAdapter = new UbibikerAdapter(getActivity().getBaseContext(),R.layout.ubibiker_list_item, mItems);
+        //mAdapter = new UbibikerAdapter(getActivity().getBaseContext(),R.layout.ubibiker_list_item, mItems);
 
-        listView.setAdapter(mAdapter);
+        //listView.setAdapter(mAdapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 TextView vName = (TextView) view.findViewById(R.id.ubibikerName);
                 TextView vEmail = (TextView) view.findViewById(R.id.ubibikerEmail);
-                Intent intent = new Intent(getContext(), UbibikerProfileActivity.class);
+                Intent intent = new Intent(getActivity().getBaseContext(), UbibikerProfileActivity.class);
                 intent.putExtra(EXTRA_NAME, vName.getText());
                 intent.putExtra(EXTRA_EMAIL, vEmail.getText());
                 startActivity(intent);
@@ -132,10 +159,12 @@ public class UbibikersFragment extends Fragment {
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putSerializable(STATE_ITEMS, mItems);
+        outState.putBoolean(STATE_VISIBLE, mFoundResults);
     }
 
     public class QueryTask extends AsyncTask<Void, Void, Boolean> {
         private final String mQuery;
+        private int mErrorCode;
 
         QueryTask(String query) {
             mQuery = query;
@@ -143,12 +172,23 @@ public class UbibikersFragment extends Fragment {
 
         @Override
         protected Boolean doInBackground(Void... params) {
-            // TODO: attempt query request in network service.
             try {
-                // Simulate network access.
-                Thread.sleep(1000);
-                mItems = generateQueryResult();
-            } catch (InterruptedException e) {
+                String response = new UBIClient().GET("http://10.0.2.2:5000/ubibiker?name=" + mQuery.replaceAll(" ", "%20"));
+
+                mItems = generateResult(response);
+                mAdapter = new UbibikerAdapter(getActivity().getBaseContext(),R.layout.ubibiker_list_item, mItems);
+
+            } catch (ErrorCodeException e){
+                mErrorCode = e.getCode();
+                return false;
+            }
+            catch (InterruptedException e) {
+                return false;
+            } catch (JSONException e) {
+                e.printStackTrace();
+                return false;
+            } catch (Exception e) {
+                e.printStackTrace();
                 return false;
             }
 
@@ -158,9 +198,15 @@ public class UbibikersFragment extends Fragment {
         @Override
         protected void onPostExecute(final Boolean success) {
             showProgress(false);
-
-            mAdapter = new UbibikerAdapter(getActivity().getBaseContext(),R.layout.ubibiker_list_item, mItems);
+            if (mItems.isEmpty()) {
+                mFoundResults = false;
+                noResults.setVisibility(View.VISIBLE);
+            }
+            else {
+                mFoundResults = true;
+            }
             listView.setAdapter(mAdapter);
+
         }
     }
 
@@ -200,21 +246,33 @@ public class UbibikersFragment extends Fragment {
         }
     }
 
-    public ArrayList<Ubibiker> generateQueryResult() {
-        Ubibiker u1 = new Ubibiker("Diogo Andrade", "diogo@yubo.be");
-        Ubibiker u2 = new Ubibiker("Rafael Barreira", "raba@inesc.pt");
-        Ubibiker u3 = new Ubibiker("Pedro Loureiro", "pl@hotmail.com");
-
+    public ArrayList<Ubibiker> generateResult(String response) {
         ArrayList<Ubibiker> result = new ArrayList<Ubibiker>();
 
-        result.add(u1);
-        result.add(u2);
-        result.add(u3);
+        try {
+            JSONObject mObject = new JSONObject(response.toString());
+
+            JSONArray arr = mObject.getJSONArray("ubibikers");
+
+            for (int i = 0; i < arr.length(); i++) {
+                String name = arr.getJSONObject(i).getString("name");
+                String email = arr.getJSONObject(i).getString("email");
+                Ubibiker ubibiker = new Ubibiker(name, email);
+                result.add(ubibiker);
+            }
+        }  catch (JSONException e) {
+            e.printStackTrace();
+        }
 
         return result;
     }
 
-/*
+    @Override
+    public void onResume() {
+        super.onResume();
+    }
+
+    /*
     // TODO: Rename method, update argument and hook method into UI event
     public void onButtonPressed(Uri uri) {
         if (mListener != null) {

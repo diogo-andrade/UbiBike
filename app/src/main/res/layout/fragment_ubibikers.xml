@@ -44,5 +44,13 @@
             android:layout_marginBottom="8dp"
             android:visibility="gone"
             android:layout_below="@+id/searchView"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/no_results"
+            android:text="@string/no_results"
+            android:visibility="gone"
+            android:layout_below="@+id/searchView"/>
     </RelativeLayout>
 </FrameLayout>

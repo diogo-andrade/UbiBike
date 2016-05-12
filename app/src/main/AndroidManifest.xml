@@ -74,7 +74,7 @@
             android:name=".ChatActivity"
             android:label="@string/title_activity_chat"></activity>
         <activity
-            android:name=".WifiFragment"
+            android:name=".WifiActivity"
             android:label="Wifi-Direct"></activity>
         <service
             android:name="pt.inesc.termite.wifidirect.service.SimWifiP2pService" />

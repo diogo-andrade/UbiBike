@@ -37,7 +37,7 @@ import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
  */
 
 //It's an activity and not a fragment
-public class WifiFragment extends AppCompatActivity {
+public class WifiActivity extends AppCompatActivity {
     private static final String TAG = "WifiActivity";
 
     private Messenger mService = null;

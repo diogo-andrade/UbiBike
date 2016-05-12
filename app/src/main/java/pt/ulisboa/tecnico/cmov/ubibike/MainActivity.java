@@ -7,20 +7,15 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.graphics.Rect;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Messenger;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.AppCompatImageView;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -50,9 +45,7 @@ import pt.inesc.termite.wifidirect.SimWifiP2pBroadcast;
 import pt.inesc.termite.wifidirect.SimWifiP2pDevice;
 import pt.inesc.termite.wifidirect.SimWifiP2pDeviceList;
 import pt.inesc.termite.wifidirect.SimWifiP2pManager;
-import pt.inesc.termite.wifidirect.SimWifiP2pInfo;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
-import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketManager;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
 import pt.ulisboa.tecnico.cmov.ubibike.objects.SimWifiP2pBroadcastReceiver;
 
@@ -70,6 +63,8 @@ public class MainActivity extends AppCompatActivity
     private String mEmail = "DEFAULT";
     private String mScore = "DEFAULT";
 
+    IntentFilter filter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -84,7 +79,7 @@ public class MainActivity extends AppCompatActivity
 
         // initialize the Termite API
 
-        IntentFilter filter = new IntentFilter();
+        filter = new IntentFilter();
         filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_STATE_CHANGED_ACTION);
         filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_PEERS_CHANGED_ACTION);
         filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_NETWORK_MEMBERSHIP_CHANGED_ACTION);
@@ -225,7 +220,7 @@ public class MainActivity extends AppCompatActivity
                 break;
             case R.id.nav_wifi:
                 //TODO: activity
-                Intent intent = new Intent(this, WifiFragment.class);
+                Intent intent = new Intent(this, WifiActivity.class);
                 this.startActivity(intent);
                 break;
             case R.id.nav_settings:
@@ -295,7 +290,14 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onPause() {
         super.onPause();
+        registerReceiver(((UBIApplication) getApplication()).getReceiver(), filter);
+    }
+
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
         unregisterReceiver(((UBIApplication) getApplication()).getReceiver());
+
     }
 
     @Override
@@ -361,7 +363,7 @@ public class MainActivity extends AppCompatActivity
             } catch (UnknownHostException e) {
                 return "Unknown Host:" + e.getMessage();
             } catch (IOException e) {
-                return "IO error:" + e.getMessage();
+                return "IO error:" + e. getMessage();
             }
             return null;
         }

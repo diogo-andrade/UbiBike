@@ -38,6 +38,12 @@ class Ubibiker():
       "points": self.points
     }
 
+  def serialize_search(self):
+    return {
+      "name": self.name,
+      "email": self.email
+    }
+
 @app.route("/")
 def hello():
   return "Hello World!"
@@ -86,9 +92,9 @@ def ubibiker():
     
   if 'name' in request.args:
     name = request.args.get('name')
-    #foundlist = [ubibiker for email, ubibiker in ds.ubibikers.iteritems() if name in ubibiker.name.split()]
     results = filter(filter_users_by_name(name), ds.ubibikers.iteritems())
-    return jsonify(ubibikers=[v.serialize() for k, v in results])
+ 
+    return jsonify(ubibikers=[v.serialize_search() for k, v in results])
   else:
     abort(400) # Missing fields.
 

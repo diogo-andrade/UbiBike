@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<gpx xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" version="1.1" creator="JustGoRide.co.uk - http://www.JustGoRide.co.uk" xmlns="http://www.topografix.com/GPX/1/1">
+  <metadata>
+    <name>my first route</name>
+    <desc />
+    <copyright author="">
+      <year>2010</year>
+    </copyright>
+    <bounds minlat="38.74924838" minlon="-9.20676827" maxlat="38.76019789" maxlon="-9.18283225" />
+  </metadata>
+  <trk>
+    <name>my first route</name>
+    <trkseg>
+      <trkpt lat="38.75322986" lon="-9.20676827">
+        <ele>92.6128082275391</ele>
+      </trkpt>
+      <trkpt lat="38.75257" lon="-9.20487">
+        <ele>92.6692428588867</ele>
+      </trkpt>
+      <trkpt lat="38.75197" lon="-9.20516">
+        <ele>88.2439498901367</ele>
+      </trkpt>
+      <trkpt lat="38.75105" lon="-9.20252">
+        <ele>82.7550277709961</ele>
+      </trkpt>
+      <trkpt lat="38.74924838" lon="-9.19120464">
+        <ele>83.6728973388672</ele>
+      </trkpt>
+      <trkpt lat="38.75077" lon="-9.19113">
+        <ele>80.5583267211914</ele>
+      </trkpt>
+      <trkpt lat="38.75281" lon="-9.18824">
+        <ele>80.4411239624023</ele>
+      </trkpt>
+      <trkpt lat="38.7557737" lon="-9.18572717">
+        <ele>100.453117370605</ele>
+      </trkpt>
+      <trkpt lat="38.76019789" lon="-9.18499773">
+        <ele>88.7322692871094</ele>
+      </trkpt>
+      <trkpt lat="38.7601071" lon="-9.18283225">
+        <ele>97.4765777587891</ele>
+      </trkpt>
+    </trkseg>
+  </trk>
+</gpx>

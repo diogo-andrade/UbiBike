@@ -35,6 +35,7 @@ public class MyExpandableAdapter extends BaseExpandableListAdapter {
     private static final String EXTRA_NAME = "pt.ulisboa.tecnico.cmov.ubibike.NAME";
 
     private BookTask mBookTask = null;
+    private BookCancelTask mBookCancelTask = null;
 
     private Context _context;
     private List<String> _listDataHeader; // header titles
@@ -99,6 +100,8 @@ public class MyExpandableAdapter extends BaseExpandableListAdapter {
                 else if ("CANCEL".equals(((Button) v).getText().toString())) {
                     isBikeBooked = false;
                     ((Button) v).setText("BOOK");
+                    mBookCancelTask = new BookCancelTask(_email, (Button) v);
+                    mBookCancelTask.execute((Void) null);
                 }
             }
         });
@@ -178,6 +181,7 @@ public class MyExpandableAdapter extends BaseExpandableListAdapter {
         private String mEmail;
         private String mStation;
         private Button mBtn;
+        private String response;
 
         BookTask(String email, String station, Button btn) {
             this.mEmail = email;
@@ -188,7 +192,9 @@ public class MyExpandableAdapter extends BaseExpandableListAdapter {
         @Override
         protected Boolean doInBackground(Void... params) {
             try {
-                String response = new UBIClient().GET("http://10.0.2.2:5000/book?email="+mEmail+"&station="+mStation.replaceAll(" ", "%20"));
+                response = new UBIClient().GET("http://10.0.2.2:5000/book?email="+mEmail+"&station="+mStation.replaceAll(" ", "%20"));
+
+
                 //processResponse(response);
             } catch (ErrorCodeException e){
                 mErrorCode = e.getCode();
@@ -211,11 +217,59 @@ public class MyExpandableAdapter extends BaseExpandableListAdapter {
         protected void onPostExecute(final Boolean success) {
 
             if(success) {
-
+                Toast.makeText(_context, "You have booked bike "+response +".", Toast.LENGTH_SHORT).show();
             } else if(mErrorCode == 410) {
                 mBtn.setText("BOOK");
                 isBikeBooked = false;
                 Toast.makeText(_context, "This station are out of bikes.", Toast.LENGTH_SHORT).show();
+            }
+
+        }
+    }
+
+    public class BookCancelTask extends AsyncTask<Void, Void, Boolean> {
+        private int mErrorCode;
+        private String mEmail;
+        private Button mBtn;
+        private String response;
+
+        BookCancelTask(String email, Button btn) {
+            this.mEmail = email;
+            this.mBtn = btn;
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            try {
+                response = new UBIClient().GET("http://10.0.2.2:5000/book/cancel?email="+mEmail);
+
+                //processResponse(response);
+            } catch (ErrorCodeException e){
+                mErrorCode = e.getCode();
+                return false;
+            }
+            catch (InterruptedException e) {
+                return false;
+            } catch (JSONException e) {
+                e.printStackTrace();
+                return false;
+            } catch (Exception e) {
+                e.printStackTrace();
+                return false;
+            }
+
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(final Boolean success) {
+
+            if(success) {
+                Toast.makeText(_context, response, Toast.LENGTH_SHORT).show();
+            } else if(mErrorCode == 410) {
+                mBtn.setText("BOOK");
+                isBikeBooked = false;
+                Toast.makeText(_context, "You don't have any bike booked.", Toast.LENGTH_SHORT).show();
             }
 
         }

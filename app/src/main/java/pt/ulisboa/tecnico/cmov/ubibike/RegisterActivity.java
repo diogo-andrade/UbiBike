@@ -185,7 +185,6 @@ public class RegisterActivity  extends AppCompatActivity {
                 user.setPoints(score);
 
 
-
             } catch (ErrorCodeException e){
                 mErrorCode = e.getCode();
                 return false;

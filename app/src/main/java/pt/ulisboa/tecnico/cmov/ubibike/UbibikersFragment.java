@@ -175,7 +175,7 @@ public class UbibikersFragment extends Fragment {
             try {
                 String response = new UBIClient().GET("http://10.0.2.2:5000/ubibiker?name=" + mQuery.replaceAll(" ", "%20"));
 
-                mItems = generateResult(response);
+                mItems = processResult(response);
                 mAdapter = new UbibikerAdapter(getActivity().getBaseContext(),R.layout.ubibiker_list_item, mItems);
 
             } catch (ErrorCodeException e){
@@ -246,7 +246,7 @@ public class UbibikersFragment extends Fragment {
         }
     }
 
-    public ArrayList<Ubibiker> generateResult(String response) {
+    public ArrayList<Ubibiker> processResult(String response) {
         ArrayList<Ubibiker> result = new ArrayList<Ubibiker>();
 
         try {

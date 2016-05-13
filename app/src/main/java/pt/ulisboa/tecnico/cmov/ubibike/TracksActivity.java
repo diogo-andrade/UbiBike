@@ -15,6 +15,7 @@ import android.widget.Toast;
 
 import org.w3c.dom.Text;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 import pt.ulisboa.tecnico.cmov.ubibike.adapters.TracksAdapter;

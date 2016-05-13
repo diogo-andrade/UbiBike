@@ -23,8 +23,9 @@ public class Trajectory implements Parcelable, Serializable {
     private LatLng end;
     private PolylineOptions line;
 
-    public Trajectory (LatLng start){
+    public Trajectory (String station, LatLng start){
         this.start = start;
+        this.name = station;
     }
 
     public Trajectory (LatLng start, LatLng end,PolylineOptions line){
@@ -75,8 +76,8 @@ public class Trajectory implements Parcelable, Serializable {
         return ts;
     }
 
-    public void setTimeStamp(Timestamp ts) {
-        this.ts = ts;
+    public void setTimeStamp(long ts) {
+        this.ts = new Timestamp(ts);
     }
 
    protected Trajectory(Parcel in) {

@@ -1,5 +1,6 @@
 package pt.ulisboa.tecnico.cmov.ubibike;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -13,6 +14,10 @@ import android.widget.Toast;
 
 import com.google.android.gms.maps.model.LatLng;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.security.acl.Group;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,6 +27,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import pt.ulisboa.tecnico.cmov.ubibike.adapters.MyExpandableAdapter;
+import pt.ulisboa.tecnico.cmov.ubibike.exceptions.ErrorCodeException;
+import pt.ulisboa.tecnico.cmov.ubibike.services.UBIClient;
 
 
 /**
@@ -42,26 +49,17 @@ public class StationsFragment extends Fragment {
     public ArrayList<String> stationsHashMapKeys;
     public ArrayList<LatLng> stationsCoordinates;
 
+    private UpdateStationsTask mUpdateStationsTask;
+    private String mEmail;
     Timer t;
     View v;
     Bundle lastBundle;
     MyExpandableAdapter mAdapter;
     ExpandableListView expandableListView;
     private int lastExpandedPosition = -1;
+    Boolean first = false;
 
-    TimerTask timer= new TimerTask(){
-
-        @Override
-        public void run() {
-            getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    prepareListData();
-                    mAdapter.notifyDataSetChanged();
-                }
-            });
-        }
-    };
+    private static final String ARG_PARAM1 = "param1";
 
     public StationsFragment() {
         // Required empty public constructor
@@ -72,13 +70,14 @@ public class StationsFragment extends Fragment {
      * this fragment using the provided parameters.
      *
      * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
      * @return A new instance of fragment UbibikersFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static StationsFragment newInstance() {
+    public static StationsFragment newInstance(String email) {
         StationsFragment fragment = new StationsFragment();
-
+        Bundle args = new Bundle();
+        args.putString(ARG_PARAM1, email);
+        fragment.setArguments(args);
         return fragment;
     }
 
@@ -86,13 +85,24 @@ public class StationsFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         lastBundle = savedInstanceState;
+        if (getArguments() != null) {
+            mEmail = getArguments().getString(ARG_PARAM1);
+        }
+
         if (savedInstanceState != null) {
             stationsHashMap = (HashMap<String,List<String>>) savedInstanceState.getSerializable(STATE_STATIONS);
             stationsHashMapKeys = (ArrayList<String>) savedInstanceState.getSerializable(STATE_KEYS);
             stationsCoordinates = (ArrayList<LatLng>)  savedInstanceState.getSerializable(STATE_COORDINATES);
+            first = false;
         } else {
-            prepareListData();
+            first = true;
+            stationsHashMapKeys = new ArrayList<String>();
+            stationsHashMap = new HashMap<String, List<String>>();
+            stationsCoordinates = new ArrayList<LatLng>();
+            //prepareListData();
         }
+        t = new Timer();
+        t.scheduleAtFixedRate(timer, 0, 8000);
     }
 
     @Override
@@ -108,7 +118,7 @@ public class StationsFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         expandableListView = (ExpandableListView) getActivity().findViewById(R.id.stationsList);
 
-        mAdapter =  new MyExpandableAdapter(getActivity().getBaseContext(), stationsHashMap, stationsHashMapKeys, stationsCoordinates);
+        mAdapter =  new MyExpandableAdapter(getActivity().getBaseContext(), stationsHashMap, stationsHashMapKeys, stationsCoordinates, mEmail);
         expandableListView.setAdapter(mAdapter);
 
       /*  expandableListView.setOnGroupExpandListener(new ExpandableListView.OnGroupExpandListener() {
@@ -122,19 +132,48 @@ public class StationsFragment extends Fragment {
                 lastExpandedPosition = groupPosition;
             }
         });*/
-
-        t = new Timer();
-        t.scheduleAtFixedRate(timer, 0, 10000);
     }
 
     /*
      * Preparing the list data
      */
-    private void prepareListData() {
-        stationsHashMapKeys = new ArrayList<String>();
-        stationsHashMap = new HashMap<String, List<String>>();
-        stationsCoordinates = new ArrayList<LatLng>();
+    private void processResponse(String json) {
 
+        stationsHashMapKeys.clear();
+        stationsCoordinates.clear();
+        stationsHashMap.clear();
+
+
+        try {
+            JSONObject mObject = new JSONObject(json.toString());
+            JSONArray arrStations =  mObject.getJSONArray("stations");
+
+            for (int i = 0; i < arrStations.length(); i++) {
+                String stationName = arrStations.getJSONObject(i).getString("name");
+                JSONObject location = arrStations.getJSONObject(i).getJSONObject("location");
+                double lat = location.getDouble("lat");
+                double lng = location.getDouble("lng");
+
+                JSONArray arrBikes = arrStations.getJSONObject(i).getJSONArray("bikes");
+
+                int bikesCounter = 0;
+                for (int b = 0; b < arrBikes.length(); b++) {
+                    bikesCounter+=1;
+                }
+
+                stationsHashMapKeys.add(stationName);
+                stationsCoordinates.add(new LatLng(lat, lng));
+                List<String> station = new ArrayList<String>();
+                station.add("Available bikes: " + bikesCounter);
+                stationsHashMap.put(stationsHashMapKeys.get(i), station);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+/*
 
         // Adding child data
         stationsHashMapKeys.add("Station 0 - Cais do Sodré");
@@ -158,7 +197,7 @@ public class StationsFragment extends Fragment {
 
         stationsHashMap.put(stationsHashMapKeys.get(0), station0); // Header, Child data
         stationsHashMap.put(stationsHashMapKeys.get(1), station1);
-        stationsHashMap.put(stationsHashMapKeys.get(2), station2);
+        stationsHashMap.put(stationsHashMapKeys.get(2), station2);*/
     }
 
 
@@ -174,6 +213,57 @@ public class StationsFragment extends Fragment {
     public void onDestroy() {
         super.onDestroy();
         t.cancel();
+    }
+
+    TimerTask timer= new TimerTask(){
+
+        @Override
+        public void run() {
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mUpdateStationsTask = new UpdateStationsTask();
+                    mUpdateStationsTask.execute((Void) null);
+                    mAdapter.notifyDataSetChanged();
+                }
+            });
+        }
+    };
+
+    public class UpdateStationsTask extends AsyncTask<Void, Void, Boolean> {
+        private int mErrorCode;
+
+        UpdateStationsTask() {
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            try {
+
+                String response = new UBIClient().GET("http://10.0.2.2:5000/stations");
+                processResponse(response);
+
+            } catch (ErrorCodeException e){
+                mErrorCode = e.getCode();
+                return false;
+            }
+            catch (InterruptedException e) {
+                return false;
+            } catch (JSONException e) {
+                e.printStackTrace();
+                return false;
+            } catch (Exception e) {
+                e.printStackTrace();
+                return false;
+            }
+
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(final Boolean success) {
+            mAdapter.notifyDataSetChanged();
+        }
     }
 
 /*

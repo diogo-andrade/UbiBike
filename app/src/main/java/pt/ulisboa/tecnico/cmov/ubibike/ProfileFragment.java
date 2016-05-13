@@ -2,6 +2,8 @@ package pt.ulisboa.tecnico.cmov.ubibike;
 
 import android.app.LocalActivityManager;
 import android.content.Intent;
+import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.view.LayoutInflater;
@@ -13,11 +15,22 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.PolylineOptions;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.List;
 
+import pt.ulisboa.tecnico.cmov.ubibike.adapters.UbibikerAdapter;
+import pt.ulisboa.tecnico.cmov.ubibike.exceptions.ErrorCodeException;
 import pt.ulisboa.tecnico.cmov.ubibike.objects.Trajectory;
+import pt.ulisboa.tecnico.cmov.ubibike.objects.Ubibiker;
+import pt.ulisboa.tecnico.cmov.ubibike.services.UBIClient;
 
 /**
  * Created by Loureiro on 18-04-2016.
@@ -25,6 +38,8 @@ import pt.ulisboa.tecnico.cmov.ubibike.objects.Trajectory;
 public class ProfileFragment extends Fragment {
 
     private static final String STATE_TAB = "tab";
+    private static final String STATE_TRACKS = "tracks";
+    private static final String STATE_SCORE = "score";
 
     private static final String EXTRA_TRACKS = "pt.ulisboa.tecnico.cmov.ubibike.TRACKS";
 
@@ -43,6 +58,15 @@ public class ProfileFragment extends Fragment {
     private String mName;
     private String mEmail;
     private String mScore;
+
+    TabHost.TabSpec tabRecentTracks;
+    TabHost.TabSpec tabPastTracks;
+    View rootView;
+
+    Ubibiker ubibiker = null;
+    ArrayList<Trajectory> mTracks;
+
+    private UpdateProfileTask mUpdateProfileTask;
 
     //private OnFragmentInteractionListener mListener;
 
@@ -78,52 +102,39 @@ public class ProfileFragment extends Fragment {
             mEmail = getArguments().getString(ARG_PARAM2);
             mScore = getArguments().getString(ARG_PARAM3);
         }
+
+        if (savedInstanceState != null) {
+            mCurrentTab =  (int) savedInstanceState.getSerializable(STATE_TAB);
+            mTracks = (ArrayList<Trajectory>) savedInstanceState.getSerializable(STATE_TRACKS);
+            mScore = (String) savedInstanceState.getSerializable(STATE_SCORE);
+
+        } else {
+            mTracks = new ArrayList<Trajectory>();
+            mUpdateProfileTask = new UpdateProfileTask(mEmail);
+            mUpdateProfileTask.execute((Void) null);
+        }
+
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        if (savedInstanceState != null) {
-            mCurrentTab =  (int) savedInstanceState.getSerializable(STATE_TAB);
-        }
         // Inflate the layout for this fragment
-        View rootView = inflater.inflate(R.layout.fragment_profile, container, false);
+        rootView = inflater.inflate(R.layout.fragment_profile, container, false);
 
         TextView t1 = (TextView)rootView.findViewById(R.id.nameView);
         t1.setText(mName);
         TextView t2 = (TextView)rootView.findViewById(R.id.emailView);
         t2.setText(mEmail);
-        TextView t3 = (TextView)rootView.findViewById(R.id.scoreView);
-        t3.setText("SCORE: "+ mScore);
 
         mTabHost = (TabHost) rootView.findViewById(R.id.tabHost);
+
         mLocalActivityManager = new LocalActivityManager(getActivity(),false);
         mLocalActivityManager.dispatchCreate(savedInstanceState);
-        mTabHost.setup(mLocalActivityManager);
-        //mTabHost.setup(LocalActivityManager);
 
-        TabHost.TabSpec tabRecentTracks = mTabHost.newTabSpec("Tab1");
-        tabRecentTracks.setIndicator("Most Recent Tracks");
-        Intent i1 = new Intent().setClass(getContext(),TracksActivity.class);
-        i1.putParcelableArrayListExtra(EXTRA_TRACKS, generateData());
-        tabRecentTracks.setContent(i1);
-        mTabHost.addTab(tabRecentTracks);
-
-        TabHost.TabSpec tabPastTracks = mTabHost.newTabSpec("Tab2");
-        tabPastTracks.setIndicator("Past Tracks");
-        Intent i2 = new Intent().setClass(getContext(),TracksActivity.class);
-        tabPastTracks.setContent(i2);
-        mTabHost.addTab(tabPastTracks);
-
-        mTabHost.setOnTabChangedListener(new TabHost.OnTabChangeListener() {
-            @Override
-            public void onTabChanged(String tabId) {
-                mCurrentTab = mTabHost.getCurrentTab();
-            }
-        });
-
-        mTabHost.setCurrentTab(mCurrentTab);
-
+        if (savedInstanceState != null) {
+            updateView();
+        }
         return rootView;
     }
 
@@ -143,28 +154,130 @@ public class ProfileFragment extends Fragment {
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putSerializable(STATE_TAB, mCurrentTab);
+        outState.putSerializable(STATE_TRACKS, mTracks);
+        outState.putSerializable(STATE_SCORE, mScore);
     }
 
-    public ArrayList<Trajectory> generateData() {
-        Trajectory t1 = new Trajectory(new LatLng(38.7363219,-9.1378428));
-        Trajectory t2 = new Trajectory(new LatLng(38.7363219,-9.1378428));
-        Trajectory t3 = new Trajectory(new LatLng(38.7363219,-9.1378428));
+    public void processResult(String json) {
+        mTracks = new ArrayList<Trajectory>();
 
-        t1.setName("Técnico");
-        t2.setName("Secção de Folhas");
-        t3.setName("Desordem dos Engenheiros");
+        try {
+            JSONObject mObject = new JSONObject(json.toString());
+            String name = mObject.getString("name");
+            String email = mObject.getString("email");
+            int score = mObject.getInt("points");
+            ubibiker = new Ubibiker(name, email);
+            ubibiker.setPoints(score);
 
-        t1.setTimeStamp(new Timestamp(1213124211));
-        t2.setTimeStamp(new Timestamp(950432932));
-        t3.setTimeStamp(new Timestamp(329432909));
+            Trajectory track;
+            JSONArray arr = mObject.getJSONArray("tracks");
+            for (int i = 0; i < arr.length(); i++) {
+                String trackName = arr.getJSONObject(i).getString("name");
+                long ts = arr.getJSONObject(i).getLong("ts");
+                JSONObject end = arr.getJSONObject(i).getJSONObject("end");
+                double endLat = end.getDouble("lat");
+                double endLng = end.getDouble("lng");
+                JSONObject start = arr.getJSONObject(i).getJSONObject("start");
+                double startLat = end.getDouble("lat");
+                double startLng = end.getDouble("lng");
+                JSONArray line = arr.getJSONObject(i).getJSONArray("line");
+                PolylineOptions polyline = drawLine(line);
+                track = new Trajectory(new LatLng(endLat, endLng), new LatLng(startLat,startLng),polyline);
+                track.setName(trackName);
+                track.setTimeStamp(ts);
+                mTracks.add(track);
+            }
+        }  catch (JSONException e) {
+            e.printStackTrace();
+        }
+        ubibiker.setTrajectories(mTracks);
+    }
 
-        ArrayList<Trajectory> result = new ArrayList<Trajectory>();
+    public PolylineOptions drawLine(JSONArray line) {
+        PolylineOptions options = new PolylineOptions().width(5).color(Color.BLUE).geodesic(true);
 
-        result.add(t1);
-        result.add(t2);
-        result.add(t3);
+        try {
+            for (int l = 0; l < line.length(); l++) {
+                double lineLat = line.getJSONObject(l).getDouble("lat");
+                double lineLng = line.getJSONObject(l).getDouble("lng");
+                LatLng point = new LatLng(lineLat,lineLng);
+                options.add(point);
+            }
+        }  catch (JSONException e) {
+            e.printStackTrace();
+        }
 
-        return result;
+        return options;
+    }
+
+    public class UpdateProfileTask extends AsyncTask<Void, Void, Boolean> {
+        private final String mEmail;
+        private int mErrorCode;
+
+        UpdateProfileTask(String mEmail) {
+            this.mEmail = mEmail;
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            try {
+                //String json = "[0,{\"1\":{\"2\":{\"3\":{\"4\":[5,{\"6\":7}]}}}}]";
+                String response = new UBIClient().GET("http://10.0.2.2:5000/profile?email="+mEmail);
+
+                processResult(response);
+                mScore = ubibiker.getPoints() + "";
+
+            } catch (ErrorCodeException e){
+                mErrorCode = e.getCode();
+                return false;
+            }
+            catch (InterruptedException e) {
+                return false;
+            } catch (JSONException e) {
+                e.printStackTrace();
+                return false;
+            } catch (Exception e) {
+                e.printStackTrace();
+                return false;
+            }
+
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(final Boolean success) {
+            updateView();
+        }
+    }
+
+    public void updateView () {
+        TextView t3 = (TextView) rootView.findViewById(R.id.scoreView);
+        t3.setText("SCORE: "+ mScore);
+
+        mTabHost.setup(mLocalActivityManager);
+        //mTabHost.setup(LocalActivityManager);
+
+        tabRecentTracks = mTabHost.newTabSpec("Tab1");
+        tabRecentTracks.setIndicator("Most Recent Tracks");
+        Intent i1 = new Intent().setClass(getContext(),TracksActivity.class);
+        i1.putParcelableArrayListExtra(EXTRA_TRACKS, mTracks);
+        tabRecentTracks.setContent(i1);
+        mTabHost.addTab(tabRecentTracks);
+
+        tabPastTracks = mTabHost.newTabSpec("Tab2");
+        tabPastTracks.setIndicator("Past Tracks");
+        Intent i2 = new Intent().setClass(getContext(), TracksActivity.class);
+        tabPastTracks.setContent(i2);
+        mTabHost.addTab(tabPastTracks);
+
+        mTabHost.setOnTabChangedListener(new TabHost.OnTabChangeListener() {
+            @Override
+            public void onTabChanged(String tabId) {
+                mCurrentTab = mTabHost.getCurrentTab();
+            }
+        });
+
+        mTabHost.setCurrentTab(mCurrentTab);
     }
 /*
     // TODO: Rename method, update argument and hook method into UI event

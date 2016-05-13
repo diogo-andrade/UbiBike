@@ -1,11 +1,13 @@
 package pt.ulisboa.tecnico.cmov.ubibike.adapters;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Typeface;
+import android.os.AsyncTask;
 import android.os.Parcelable;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,33 +17,42 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.model.LatLng;
 
+import org.json.JSONException;
+
 import pt.ulisboa.tecnico.cmov.ubibike.MapsActivity;
 import pt.ulisboa.tecnico.cmov.ubibike.R;
+import pt.ulisboa.tecnico.cmov.ubibike.exceptions.ErrorCodeException;
 import pt.ulisboa.tecnico.cmov.ubibike.objects.Trajectory;
+import pt.ulisboa.tecnico.cmov.ubibike.services.UBIClient;
 
 public class MyExpandableAdapter extends BaseExpandableListAdapter {
 
     private static final String EXTRA_TRACK = "pt.ulisboa.tecnico.cmov.ubibike.TRACK";
     private static final String EXTRA_NAME = "pt.ulisboa.tecnico.cmov.ubibike.NAME";
 
+    private BookTask mBookTask = null;
+
     private Context _context;
     private List<String> _listDataHeader; // header titles
     // child data in format of header title, child title
     private HashMap<String, List<String>> _listDataChild;
     private List<LatLng> _stationsCoordinates;
+    private String _email;
 
     TextView txtListChild;
     Boolean isBikeBooked = false;
 
     public MyExpandableAdapter(Context context, HashMap<String, List<String>> listChildData,
-                               List<String> listDataHeader, List<LatLng> coordinates) {
+                               List<String> listDataHeader, List<LatLng> coordinates, String email) {
         this._context = context;
         this._listDataHeader = listDataHeader;
         this._listDataChild = listChildData;
         this._stationsCoordinates = coordinates;
+        this._email = email;
     }
 
     @Override
@@ -72,16 +83,18 @@ public class MyExpandableAdapter extends BaseExpandableListAdapter {
 
         txtListChild.setText(childText);
 
+        final String parentText = (String) getGroup(groupPosition);
+
+        final LatLng coordinates = _stationsCoordinates.get(groupPosition);
+
         Button button = (Button) convertView.findViewById(R.id.button);
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 if ("BOOK".equals(((Button) v).getText().toString()) && !isBikeBooked) {
                     isBikeBooked = true;
                     ((Button) v).setText("CANCEL");
-                    String[] text = ((TextView)((RelativeLayout) v.getParent()).findViewById(R.id.textViewChild)).getText().toString().split(": ");
-                    String t1 = text[0];
-                    int t2 = Integer.parseInt(text[1])+1;
-                    ((TextView)((RelativeLayout) v.getParent()).findViewById(R.id.textViewChild)).setText(t1 + ": " + t2);
+                    mBookTask = new BookTask(_email, parentText, (Button) v);
+                    mBookTask.execute((Void) null);
                 }
                 else if ("CANCEL".equals(((Button) v).getText().toString())) {
                     isBikeBooked = false;
@@ -93,12 +106,10 @@ public class MyExpandableAdapter extends BaseExpandableListAdapter {
         Button mapButton = (Button) convertView.findViewById(R.id.map_button);
         mapButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                LatLng coordinates = _stationsCoordinates.get(groupPosition);
-                Trajectory track = new Trajectory(coordinates);
-                String station = _listDataHeader.get(groupPosition);
+                Trajectory track = new Trajectory(parentText, coordinates);
                 Intent intent = new Intent(v.getContext(), MapsActivity.class);
                 intent.putExtra(EXTRA_TRACK, (Parcelable) track);
-                intent.putExtra(EXTRA_NAME, station);
+                intent.putExtra(EXTRA_NAME, parentText);
                 v.getContext().startActivity(intent);
                 //finish();
 
@@ -160,5 +171,53 @@ public class MyExpandableAdapter extends BaseExpandableListAdapter {
     @Override
     public void notifyDataSetChanged() {
         super.notifyDataSetChanged();
+    }
+
+    public class BookTask extends AsyncTask<Void, Void, Boolean> {
+        private int mErrorCode;
+        private String mEmail;
+        private String mStation;
+        private Button mBtn;
+
+        BookTask(String email, String station, Button btn) {
+            this.mEmail = email;
+            this.mStation = station;
+            this.mBtn = btn;
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            try {
+                String response = new UBIClient().GET("http://10.0.2.2:5000/book?email="+mEmail+"&station="+mStation.replaceAll(" ", "%20"));
+                //processResponse(response);
+            } catch (ErrorCodeException e){
+                mErrorCode = e.getCode();
+                return false;
+            }
+            catch (InterruptedException e) {
+                return false;
+            } catch (JSONException e) {
+                e.printStackTrace();
+                return false;
+            } catch (Exception e) {
+                e.printStackTrace();
+                return false;
+            }
+
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(final Boolean success) {
+
+            if(success) {
+
+            } else if(mErrorCode == 410) {
+                mBtn.setText("BOOK");
+                isBikeBooked = false;
+                Toast.makeText(_context, "This station are out of bikes.", Toast.LENGTH_SHORT).show();
+            }
+
+        }
     }
 }

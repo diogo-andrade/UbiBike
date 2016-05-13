@@ -209,7 +209,7 @@ public class MainActivity extends AppCompatActivity
                 isFragment = true;
                 break;
             case R.id.nav_stations:
-                fragment = new StationsFragment().newInstance();
+                fragment = new StationsFragment().newInstance(mEmail);
                 isFragment = true;
                 break;
             case R.id.nav_wifi:

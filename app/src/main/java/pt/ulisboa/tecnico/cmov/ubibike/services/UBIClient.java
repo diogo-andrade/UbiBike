@@ -2,6 +2,8 @@ package pt.ulisboa.tecnico.cmov.ubibike.services;
 
 import android.util.Log;
 
+import org.json.JSONException;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -63,6 +65,46 @@ public class UBIClient {
             }
         }
     }
+
+    public String POST(String myurl, String json) throws Exception {
+        InputStream is = null;
+        int len = 500;
+
+        try {
+            URL url = new URL(myurl);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/json");
+            conn.setDoOutput(true);
+            conn.setDoOutput(true);
+            conn.setUseCaches(false);
+            conn.setConnectTimeout(10000);
+            conn.setReadTimeout(10000);
+
+            conn.connect();
+
+            OutputStreamWriter out = new   OutputStreamWriter(conn.getOutputStream());
+            out.write(json);
+            out.close();
+
+            int response = conn.getResponseCode();
+            Log.d("TAG", "The response is: " + response);
+            String result = null;
+            if(response == 200){
+                is = conn.getInputStream();
+                is = conn.getInputStream();
+                // Convert the InputStream into a string
+                result = readIt(is, len);
+            } else
+                throw new ErrorCodeException(response); // throw error code
+
+            return result;
+        } finally {
+            if(is !=null)
+                is.close();
+        }
+    }
+
 
     public String GET(String myurl) throws Exception {
         InputStream is = null;

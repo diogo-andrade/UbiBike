@@ -44,13 +44,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             if(track.getEnd() == null) {
                 isTrajectory = false;
                 startPoint = track.getStart();
-                trackName = track.getName();
+                trackName = getIntent().getExtras().getString(EXTRA_NAME);
+                System.out.println(trackName);
             }  else { //Situação em que temos uma trajectória
                 isTrajectory = true;
                 startPoint = track.getStart();
                 endPoint = track.getEnd();
                 line = track.getLine();
-                trackName = track.getName();
+                trackName = getIntent().getExtras().getString(EXTRA_NAME);
             }
     }
 

@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import pt.ulisboa.tecnico.cmov.ubibike.adapters.NearUbibikerAdapter;
 import pt.ulisboa.tecnico.cmov.ubibike.adapters.UbibikerAdapter;
 import pt.ulisboa.tecnico.cmov.ubibike.objects.Ubibiker;
+import pt.ulisboa.tecnico.cmov.ubibike.services.TermiteService;
 
 
 /**
@@ -78,6 +79,7 @@ public class NearUbikers extends Fragment {
     public void onViewCreated (View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        TermiteService.getInstance().updatePeers();
         // On screen rotation loads ListView items previously searched
         if (savedInstanceState != null) {
             mItems = (ArrayList<Ubibiker>) savedInstanceState.getSerializable(STATE_ITEMS);

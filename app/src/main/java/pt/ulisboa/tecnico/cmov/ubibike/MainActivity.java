@@ -70,7 +70,6 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        TermiteService tm = new TermiteService();
 
         Bundle extras = getIntent().getExtras();
 

@@ -76,13 +76,8 @@ public class WifiFragment extends Fragment{
 
             v.findViewById(R.id.idWifiOnButton).setEnabled(false);
 
-            if (TermiteService.getInstance() == null) {
-                Log.d("DEBUG", "para ai");
-        }
-            SimWifiP2pSocketManager.Init(getActivity().getBaseContext());
-            Intent intent = new Intent();
-
-            TermiteService.getInstance().startService(intent);
+            new TermiteService();
+            getActivity().startService(new Intent(getActivity(),TermiteService.class));
 
         }
     };
@@ -91,8 +86,7 @@ public class WifiFragment extends Fragment{
         public void onClick(View v){
                 getView().findViewById(R.id.idWifiOnButton).setEnabled(true);
                 v.findViewById(R.id.idWifiOffButton).setEnabled(false);
+                TermiteService.getInstance().onDisconect();
             }
     };
-
-
 }

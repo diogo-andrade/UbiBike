@@ -76,6 +76,7 @@
 
         <service
             android:name="pt.inesc.termite.wifidirect.service.SimWifiP2pService" />
+        <service android:name="pt.ulisboa.tecnico.cmov.ubibike.services.TermiteService"></service>
     </application>
 
 </manifest>

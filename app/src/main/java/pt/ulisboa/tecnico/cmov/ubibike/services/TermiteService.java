@@ -12,6 +12,7 @@ import android.os.IBinder;
 import android.os.Messenger;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -43,6 +44,7 @@ public class TermiteService extends Service implements SimWifiP2pManager.PeerLis
     private static TermiteService instance = null;
 
     public TermiteService() {
+        super();
         instance = this;
     }
 
@@ -52,6 +54,7 @@ public class TermiteService extends Service implements SimWifiP2pManager.PeerLis
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.d("DEBUG", "ola ola ola");
         startTermite();
 
         return 0;
@@ -78,14 +81,43 @@ public class TermiteService extends Service implements SimWifiP2pManager.PeerLis
         new IncommingCommTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
+    public void onDisconect(){
+        if (mBound) {
+            unbindService(mConnection);
+            mBound = false;
+        }
+        instance = null;
+    }
+
     @Override
     public void onDestroy() {
         if (mBound) {
             unbindService(mConnection);
             mBound = false;
-            unregisterReceiver(mReceiver);
         }
         instance = null;
+    }
+
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
+    }
+
+    public void updatePeers() {
+        if (mBound) {
+            mManager.requestPeers(mChannel, TermiteService.this);
+        } else {
+            Toast.makeText(getBaseContext(), "Service not bound", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public void updateGroup() {
+        if (mBound) {
+            mManager.requestGroupInfo(mChannel, TermiteService.this);
+        } else {
+            Toast.makeText(getBaseContext(), "Service not bound", Toast.LENGTH_SHORT).show();
+        }
     }
 
     public class IncommingCommTask extends AsyncTask<Void, String, Void> {
@@ -130,8 +162,16 @@ public class TermiteService extends Service implements SimWifiP2pManager.PeerLis
     }
 
     @Override
-    public void onGroupInfoAvailable(SimWifiP2pDeviceList simWifiP2pDeviceList, SimWifiP2pInfo simWifiP2pInfo) {
-
+    public void onGroupInfoAvailable(SimWifiP2pDeviceList devices, SimWifiP2pInfo groupInfo)  {
+        StringBuilder peersStr = new StringBuilder();
+        for (String deviceName : groupInfo.getDevicesInNetwork()) {
+            SimWifiP2pDevice device = devices.getByName(deviceName);
+            String devstr = "" + deviceName + " (" +
+                    ((device == null)?"??":device.getVirtIp()) + ")\n";
+            peersStr.append(devstr);
+            Toast.makeText(this.getApplicationContext(), device.deviceName + "%%" + device.getVirtIp(),
+                    Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
@@ -141,26 +181,24 @@ public class TermiteService extends Service implements SimWifiP2pManager.PeerLis
         for (SimWifiP2pDevice device : peers.getDeviceList()) {
             String devstr = "" + device.deviceName + " (" + device.getVirtIp() + ")\n";
             peersStr.append(devstr);
+            Toast.makeText(this.getApplicationContext(), device.deviceName + "%%" + device.getVirtIp(),
+                    Toast.LENGTH_SHORT).show();
 
         }
 
         // display list of devices in range
-        new android.app.AlertDialog.Builder(this)
+      /*  new android.app.AlertDialog.Builder(getBaseContext())
                 .setTitle("Devices in WiFi Range")
                 .setMessage(peersStr.toString())
                 .setNeutralButton("Dismiss", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                     }
                 })
-                .show();
+                .show();*/
 
     }
 
-    @Nullable
-    @Override
-    public IBinder onBind(Intent intent) {
-        return null;
-    }
+
 
     private ServiceConnection mConnection = new ServiceConnection() {
         // callbacks for service binding, passed to bindService()

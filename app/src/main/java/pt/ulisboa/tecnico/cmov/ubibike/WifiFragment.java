@@ -36,14 +36,16 @@
  * Created by gae on 10/05/2016.
  */
 public class WifiFragment extends Fragment{
-
+            private String name;
+            private String mail;
     public WifiFragment() {
         // Required empty public constructor
     }
 
-    public static WifiFragment newInstance() {
+    public static WifiFragment newInstance(String n, String e) {
         WifiFragment fragment = new WifiFragment();
-
+        fragment.mail = e;
+        fragment.name = n;
         return fragment;
     }
 
@@ -77,7 +79,10 @@ public class WifiFragment extends Fragment{
             v.findViewById(R.id.idWifiOnButton).setEnabled(false);
 
             new TermiteService();
-            getActivity().startService(new Intent(getActivity(),TermiteService.class));
+            Intent intent = new Intent(getActivity(),TermiteService.class);
+            intent.putExtra("UserName", name );
+            intent.putExtra("UserMail", mail);
+            getActivity().startService(intent);
 
         }
     };

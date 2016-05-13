@@ -17,6 +17,8 @@ import android.widget.Toast;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 
 import pt.inesc.termite.wifidirect.SimWifiP2pBroadcast;
 import pt.inesc.termite.wifidirect.SimWifiP2pDevice;
@@ -27,6 +29,7 @@ import pt.inesc.termite.wifidirect.service.SimWifiP2pService;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketManager;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
+import pt.ulisboa.tecnico.cmov.ubibike.MainActivity;
 import pt.ulisboa.tecnico.cmov.ubibike.R;
 import pt.ulisboa.tecnico.cmov.ubibike.objects.SimWifiP2pBroadcastReceiver;
 
@@ -43,6 +46,10 @@ public class TermiteService extends Service implements SimWifiP2pManager.PeerLis
     private boolean mBound = false;
     private static TermiteService instance = null;
 
+    private static String Name;
+    private static String Mail;
+    private List<String[]> groupUsers = new ArrayList<String[]>();
+
     public TermiteService() {
         super();
         instance = this;
@@ -52,9 +59,15 @@ public class TermiteService extends Service implements SimWifiP2pManager.PeerLis
         return instance;
     }
 
+    public List<String[]> getGroupUsers(){
+        return groupUsers;
+    }
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d("DEBUG", "ola ola ola");
+        Name = intent.getStringExtra("UserName");
+        Mail = intent.getStringExtra("UserMail");
         startTermite();
 
         return 0;
@@ -125,7 +138,7 @@ public class TermiteService extends Service implements SimWifiP2pManager.PeerLis
         @Override
         protected Void doInBackground(Void... params) {
 
-            Log.d("termite", "IncommingCommTask started (" + this.hashCode() + ").");
+            Log.d("DEBUG", "IncommingCommTask started (" + this.hashCode() + ").");
 
             try {
                 mSrvSocket = new SimWifiP2pSocketServer(
@@ -141,6 +154,10 @@ public class TermiteService extends Service implements SimWifiP2pManager.PeerLis
                                 new InputStreamReader(sock.getInputStream()));
                         String st = sockIn.readLine();
                         publishProgress(st);
+                        if(st.startsWith("[INFO]")){
+                            String[] stt = st.split("%%");
+                            groupUsers.add(stt);
+                        }
                         sock.getOutputStream().write(("\n").getBytes());
                     } catch (IOException e) {
                         Log.d("Error reading socket:", e.getMessage());
@@ -161,6 +178,31 @@ public class TermiteService extends Service implements SimWifiP2pManager.PeerLis
         }
     }
 
+    public class SendCommTask extends AsyncTask<String, String, Void> {
+
+        @Override
+        protected Void doInBackground(String... msg) {
+            try {
+                mCliSocket = new SimWifiP2pSocket(msg[1],
+                        Integer.parseInt(getString(R.string.port)));
+                mCliSocket.getOutputStream().write((msg[0] + "\n").getBytes());
+                BufferedReader sockIn = new BufferedReader(
+                        new InputStreamReader(mCliSocket.getInputStream()));
+                sockIn.readLine();
+                mCliSocket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            mCliSocket = null;
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+
+        }
+    }
+
     @Override
     public void onGroupInfoAvailable(SimWifiP2pDeviceList devices, SimWifiP2pInfo groupInfo)  {
         StringBuilder peersStr = new StringBuilder();
@@ -171,6 +213,11 @@ public class TermiteService extends Service implements SimWifiP2pManager.PeerLis
             peersStr.append(devstr);
             Toast.makeText(this.getApplicationContext(), device.deviceName + "%%" + device.getVirtIp(),
                     Toast.LENGTH_SHORT).show();
+            String content = "[GET INFO]";
+            String ip = device.getVirtIp();
+            new SendCommTask().executeOnExecutor(
+                    AsyncTask.THREAD_POOL_EXECUTOR,
+                    content, ip, device.getVirtIp());
         }
     }
 
@@ -185,16 +232,6 @@ public class TermiteService extends Service implements SimWifiP2pManager.PeerLis
                     Toast.LENGTH_SHORT).show();
 
         }
-
-        // display list of devices in range
-      /*  new android.app.AlertDialog.Builder(getBaseContext())
-                .setTitle("Devices in WiFi Range")
-                .setMessage(peersStr.toString())
-                .setNeutralButton("Dismiss", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                    }
-                })
-                .show();*/
 
     }
 

@@ -19,12 +19,6 @@ import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
 public class SimWifiP2pBroadcastReceiver extends BroadcastReceiver {
 
    private Service mService;
-    private SimWifiP2pBroadcastReceiver mReceiver;
-    private SimWifiP2pManager.Channel mChannel = null;
-    private SimWifiP2pManager mManager = null;
-    private SimWifiP2pSocketServer mSrvSocket = null;
-    private SimWifiP2pSocket mCliSocket = null;
-    private boolean mBound = false;
 
     public SimWifiP2pBroadcastReceiver(Service s) {
         super();

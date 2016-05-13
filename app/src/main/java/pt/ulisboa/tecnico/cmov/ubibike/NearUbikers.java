@@ -19,6 +19,9 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import pt.ulisboa.tecnico.cmov.ubibike.adapters.NearUbibikerAdapter;
 import pt.ulisboa.tecnico.cmov.ubibike.adapters.UbibikerAdapter;
@@ -43,6 +46,8 @@ public class NearUbikers extends Fragment {
 
     private ArrayList<Ubibiker> mItems;
     private ArrayAdapter<String> mAdapter;
+    ArrayList<Ubibiker> result;
+    Timer t;
 
     //private OnFragmentInteractionListener mListener;
 
@@ -65,6 +70,8 @@ public class NearUbikers extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        t = new Timer();
+        t.scheduleAtFixedRate(timer, 0, 2000);
     }
 
     @Override
@@ -79,7 +86,8 @@ public class NearUbikers extends Fragment {
     public void onViewCreated (View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        TermiteService.getInstance().updatePeers();
+        result = new ArrayList<Ubibiker>();
+        TermiteService.getInstance().updateGroup();
         // On screen rotation loads ListView items previously searched
         if (savedInstanceState != null) {
             mItems = (ArrayList<Ubibiker>) savedInstanceState.getSerializable(STATE_ITEMS);
@@ -89,7 +97,7 @@ public class NearUbikers extends Fragment {
         //mProgressView =   getActivity().findViewById(R.id.search_progress);
         listView = (ListView) getActivity().findViewById(R.id.nearUbibikersList);
 
-        mItems = generateQueryResult();
+        mItems = result;
 
         mAdapter = new NearUbibikerAdapter(getActivity().getBaseContext(),R.layout.near_ubibiker_list_item, EXTRA_NAME, mItems);
 
@@ -104,6 +112,19 @@ public class NearUbikers extends Fragment {
         super.onSaveInstanceState(outState);
         outState.putSerializable(STATE_ITEMS, mItems);
     }
+
+    TimerTask timer= new TimerTask(){
+
+        @Override
+        public void run() {
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    generateQueryResult();
+                }
+            });
+        }
+    };
 
     /**
      * Shows the progress UI and hides the login form.
@@ -141,18 +162,14 @@ public class NearUbikers extends Fragment {
         }
     }
 
-    public ArrayList<Ubibiker> generateQueryResult() {
-        Ubibiker u1 = new Ubibiker("Diogo Andrade", "diogo@yubo.be");
-        Ubibiker u2 = new Ubibiker("Rafael Barreira", "raba@inesc.pt");
-        Ubibiker u3 = new Ubibiker("Pedro Loureiro", "pl@hotmail.com");
+    public void generateQueryResult() {
+        List<String[]> aux = TermiteService.getInstance().getGroupUsers();
+        for(String[] s : aux){
+            Ubibiker u = new Ubibiker(s[0], s[1]);
+            result.add(u);
+        }
 
-        ArrayList<Ubibiker> result = new ArrayList<Ubibiker>();
-
-        result.add(u1);
-        result.add(u2);
-        result.add(u3);
-
-        return result;
+        mAdapter.notifyDataSetChanged();
     }
 
 }

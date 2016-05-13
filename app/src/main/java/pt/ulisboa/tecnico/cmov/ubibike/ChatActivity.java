@@ -3,6 +3,7 @@ package pt.ulisboa.tecnico.cmov.ubibike;
 import android.app.Activity;
 import android.content.Intent;
 import android.database.DataSetObserver;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -15,9 +16,13 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.util.List;
 
+import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
 import pt.ulisboa.tecnico.cmov.ubibike.adapters.ChatArrayAdapter;
 
 
@@ -25,11 +30,12 @@ public class ChatActivity extends AppCompatActivity {
     private static final String TAG = "ChatActivity";
 
     private ChatArrayAdapter chatArrayAdapter;
+    private SimWifiP2pSocket mCliSocket = null;
     private ListView listView;
     private EditText chatText;
     private Button buttonSend;
     private static final String KEY_TEXT_VALUE = "chatText";
-    private boolean side = false;
+    private boolean side = true;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -87,10 +93,32 @@ public class ChatActivity extends AppCompatActivity {
         });
     }
 
+    public class SendCommTask extends AsyncTask<String, String, Void> {
+
+        @Override
+        protected Void doInBackground(String... msg) {
+            try {
+                mCliSocket.getOutputStream().write((msg[0] + "\n").getBytes());
+                BufferedReader sockIn = new BufferedReader(
+                        new InputStreamReader(mCliSocket.getInputStream()));
+                sockIn.readLine();
+                mCliSocket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            mCliSocket = null;
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+
+        }
+    }
+
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        Log.d("DEBUG","vou guardar tudo!");
         List<ChatMessage> list = chatArrayAdapter.getChatMessageList();
         outState.putSerializable ("myList", (Serializable)list);
     }
@@ -100,6 +128,9 @@ public class ChatActivity extends AppCompatActivity {
     private boolean sendChatMessage() {
         chatArrayAdapter.add(new ChatMessage(side, chatText.getText().toString()));
         chatText.setText("");
+      /*  new SendCommTask().executeOnExecutor(
+                AsyncTask.THREAD_POOL_EXECUTOR,
+                content, otherIP);*/
         side = !side;
         return true;
     }

@@ -215,7 +215,7 @@ public class MainActivity extends AppCompatActivity
                 break;
             case R.id.nav_wifi:
                 //TODO: activity
-                fragment = new WifiFragment().newInstance();
+                fragment = new WifiFragment().newInstance(mName, mEmail);
                 isFragment = true;
                 break;
             case R.id.nav_settings:

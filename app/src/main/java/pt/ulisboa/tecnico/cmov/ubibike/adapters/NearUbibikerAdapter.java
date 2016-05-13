@@ -93,7 +93,7 @@ public class NearUbibikerAdapter extends ArrayAdapter {
             Button b2 = (Button) d.findViewById(R.id.button2);
             final NumberPicker np = (NumberPicker) d.findViewById(R.id.numberPicker1);
             np.setMaxValue(99999999);
-            np.setMinValue(0);
+            np.setMinValue(1);
             np.setWrapSelectorWheel(false);
             np.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
                 public void onValueChange(NumberPicker picker, int oldVal, int newVal) {

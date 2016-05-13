@@ -180,8 +180,9 @@ def book_check():
 def book_cancel():
   if 'email' in request.args:
     email = request.args.get('email')
+    station = request.args.get('station')
     for bike in ds.queue:
-      if bike.owner == email and bike.state == "B":
+      if bike.owner == email and bike.state == "B" and bike.station == station:
           station_name = bike.station
           bike.owner = None
           bike.station = None

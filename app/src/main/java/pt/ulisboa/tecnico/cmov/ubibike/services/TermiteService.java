@@ -99,7 +99,6 @@ public class TermiteService extends Service implements SimWifiP2pManager.PeerLis
             unbindService(mConnection);
             mBound = false;
         }
-        instance = null;
     }
 
     @Override
@@ -108,7 +107,6 @@ public class TermiteService extends Service implements SimWifiP2pManager.PeerLis
             unbindService(mConnection);
             mBound = false;
         }
-        instance = null;
     }
 
     @Nullable
@@ -125,12 +123,18 @@ public class TermiteService extends Service implements SimWifiP2pManager.PeerLis
         }
     }
 
+
+
     public void updateGroup() {
         if (mBound) {
             mManager.requestGroupInfo(mChannel, TermiteService.this);
         } else {
             Toast.makeText(getBaseContext(), "Service not bound", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    public boolean isWiFiON() {
+        return mBound;
     }
 
     public class IncommingCommTask extends AsyncTask<Void, String, Void> {

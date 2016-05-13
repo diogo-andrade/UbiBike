@@ -100,7 +100,7 @@ public class MyExpandableAdapter extends BaseExpandableListAdapter {
                 else if ("CANCEL".equals(((Button) v).getText().toString())) {
                     isBikeBooked = false;
                     ((Button) v).setText("BOOK");
-                    mBookCancelTask = new BookCancelTask(_email, (Button) v);
+                    mBookCancelTask = new BookCancelTask(_email, parentText,(Button) v);
                     mBookCancelTask.execute((Void) null);
                 }
             }
@@ -232,16 +232,18 @@ public class MyExpandableAdapter extends BaseExpandableListAdapter {
         private String mEmail;
         private Button mBtn;
         private String response;
+        private String mStation;
 
-        BookCancelTask(String email, Button btn) {
+        BookCancelTask(String email, String station,Button btn) {
             this.mEmail = email;
             this.mBtn = btn;
+            this.mStation = station;
         }
 
         @Override
         protected Boolean doInBackground(Void... params) {
             try {
-                response = new UBIClient().GET("http://10.0.2.2:5000/book/cancel?email="+mEmail);
+                response = new UBIClient().GET("http://10.0.2.2:5000/book/cancel?email="+mEmail+"&station="+mStation.replaceAll(" ", "%20"));
 
                 //processResponse(response);
             } catch (ErrorCodeException e){

@@ -78,7 +78,6 @@ public class WifiFragment extends Fragment{
 
             v.findViewById(R.id.idWifiOnButton).setEnabled(false);
 
-            new TermiteService();
             Intent intent = new Intent(getActivity(),TermiteService.class);
             intent.putExtra("UserName", name );
             intent.putExtra("UserMail", mail);

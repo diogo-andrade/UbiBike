@@ -5,7 +5,7 @@
     android:versionCode="1"
     android:versionName="1.0">
 
-   <uses-sdk android:minSdkVersion="10" />
+    <uses-sdk android:minSdkVersion="10" />
 
     <!-- To auto-complete the email text field in the login form with the user's emails -->
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
@@ -26,8 +26,8 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <application
-        android:allowBackup="true"
         android:name=".UBIApplication"
+        android:allowBackup="true"
         android:icon="@mipmap/ic_launcher_android"
         android:label="@string/app_name"
         android:supportsRtl="true"
@@ -50,9 +50,7 @@
         <activity
             android:name=".UbibikerProfileActivity"
             android:label="@string/title_activity_ubibiker_profile" />
-
-        <activity
-            android:name=".TracksActivity"/>
+        <activity android:name=".TracksActivity" />
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
              (See the file "res/values/google_maps_api.xml").
@@ -72,11 +70,14 @@
             android:theme="@android:style/Theme.Dialog" />
         <activity
             android:name=".ChatActivity"
-            android:label="@string/title_activity_chat"></activity>
+            android:label="@string/title_activity_chat" />
 
+        <service android:name="pt.inesc.termite.wifidirect.service.SimWifiP2pService" />
+        <service android:name=".services.TermiteService" />
         <service
-            android:name="pt.inesc.termite.wifidirect.service.SimWifiP2pService" />
-        <service android:name="pt.ulisboa.tecnico.cmov.ubibike.services.TermiteService"></service>
+            android:name=".services.TrackingService"
+            android:enabled="true"
+            android:exported="true"></service>
     </application>
 
 </manifest>

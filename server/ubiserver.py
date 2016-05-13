@@ -87,7 +87,7 @@ def register():
 @app.route("/ubibiker")
 def ubibiker():
   def filter_users_by_name(name):
-    return lambda (email, ubibiker): \
+    return lambda email, ubibiker: \
       all(map(lambda n: n in ubibiker.name.split(), name.split()))
     
   if 'name' in request.args:

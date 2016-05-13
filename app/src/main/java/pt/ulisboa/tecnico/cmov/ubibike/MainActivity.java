@@ -33,22 +33,11 @@ import android.view.ViewTreeObserver;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 
-import pt.inesc.termite.wifidirect.SimWifiP2pBroadcast;
-import pt.inesc.termite.wifidirect.SimWifiP2pDevice;
-import pt.inesc.termite.wifidirect.SimWifiP2pDeviceList;
-import pt.inesc.termite.wifidirect.SimWifiP2pManager;
-import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
-import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
-import pt.ulisboa.tecnico.cmov.ubibike.objects.SimWifiP2pBroadcastReceiver;
 import pt.ulisboa.tecnico.cmov.ubibike.services.TermiteService;
+import pt.ulisboa.tecnico.cmov.ubibike.services.TrackingService;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, LocationListener
@@ -63,9 +52,8 @@ public class MainActivity extends AppCompatActivity
     private String mName = "DEFAULT";
     private String mEmail = "DEFAULT";
     private String mScore = "DEFAULT";
-    boolean  bool = false;
+    TermiteService termite;
 
-    IntentFilter filter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,14 +67,10 @@ public class MainActivity extends AppCompatActivity
             mScore = getIntent().getStringExtra(EXTRA_SCORE);
         }
 
-        // initialize the Termite API
-
-        filter = new IntentFilter();
-        filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_STATE_CHANGED_ACTION);
-        filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_PEERS_CHANGED_ACTION);
-        filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_NETWORK_MEMBERSHIP_CHANGED_ACTION);
-        filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_GROUP_OWNERSHIP_CHANGED_ACTION);
-
+        termite = new TermiteService();
+        // Tracking service
+        Intent intent = new Intent(MainActivity.this, TrackingService.class);
+        startService(intent);
 
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -268,7 +252,6 @@ public class MainActivity extends AppCompatActivity
     // Metodos relativos ao location
     @Override
     public void onLocationChanged(Location location) {
-        Toast.makeText(getBaseContext(), "selected Item Name is " + location.toString(), Toast.LENGTH_LONG).show();
         Log.d("GPS", "Location Changed " + location.toString());
     }
 
@@ -297,6 +280,5 @@ public class MainActivity extends AppCompatActivity
     public void onProviderDisabled(String provider) {
 
     }
-
 }
 

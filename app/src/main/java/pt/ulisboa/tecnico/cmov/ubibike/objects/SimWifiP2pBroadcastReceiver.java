@@ -54,4 +54,9 @@ public class SimWifiP2pBroadcastReceiver extends BroadcastReceiver {
             //...
         }
     }
+
+    public boolean isWiFiEnabled(){
+
+        return false;
+    }
 }

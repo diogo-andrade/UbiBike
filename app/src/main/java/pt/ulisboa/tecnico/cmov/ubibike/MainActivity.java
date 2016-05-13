@@ -50,8 +50,8 @@ import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
 import pt.ulisboa.tecnico.cmov.ubibike.objects.SimWifiP2pBroadcastReceiver;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, LocationListener,
-        SimWifiP2pManager.PeerListListener {
+        implements NavigationView.OnNavigationItemSelectedListener, LocationListener
+         {
 
     private static final String EXTRA_NAME = "pt.ulisboa.tecnico.cmov.ubibike.NAME";
     private static final String EXTRA_EMAIL = "pt.ulisboa.tecnico.cmov.ubibike.EMAIL";
@@ -62,6 +62,7 @@ public class MainActivity extends AppCompatActivity
     private String mName = "DEFAULT";
     private String mEmail = "DEFAULT";
     private String mScore = "DEFAULT";
+    boolean  bool = false;
 
     IntentFilter filter;
 
@@ -84,8 +85,6 @@ public class MainActivity extends AppCompatActivity
         filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_PEERS_CHANGED_ACTION);
         filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_NETWORK_MEMBERSHIP_CHANGED_ACTION);
         filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_GROUP_OWNERSHIP_CHANGED_ACTION);
-        ((UBIApplication) getApplication()).setReceiver(new SimWifiP2pBroadcastReceiver(this));
-        registerReceiver(((UBIApplication) getApplication()).getReceiver(), filter);
 
 
         setContentView(R.layout.activity_main);
@@ -179,17 +178,12 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.action_near_ubibikers) {
-            if(((UBIApplication) getApplication()).getBound()){
+
                 fragment = new NearUbikers().newInstance();
                 fragmentManager.beginTransaction().replace(R.id.Content, fragment).commit();
                 DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
                 drawer.closeDrawer(GravityCompat.START);
-                ((UBIApplication) getApplication()).getManager().requestPeers(((UBIApplication) getApplication()).getChannel(), MainActivity.this);
                 return true;
-            }
-            else{
-                Toast.makeText(getBaseContext(), "Service not bound", Toast.LENGTH_LONG).show();
-            }
 
         }
 
@@ -220,8 +214,8 @@ public class MainActivity extends AppCompatActivity
                 break;
             case R.id.nav_wifi:
                 //TODO: activity
-                Intent intent = new Intent(this, WifiActivity.class);
-                this.startActivity(intent);
+                fragment = new WifiFragment().newInstance();
+                isFragment = true;
                 break;
             case R.id.nav_settings:
                 //TODO: activity
@@ -290,13 +284,11 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onPause() {
         super.onPause();
-        registerReceiver(((UBIApplication) getApplication()).getReceiver(), filter);
     }
 
     @Override
     public void onDestroy(){
         super.onDestroy();
-        unregisterReceiver(((UBIApplication) getApplication()).getReceiver());
 
     }
 
@@ -305,127 +297,5 @@ public class MainActivity extends AppCompatActivity
 
     }
 
-    public class IncommingCommTask extends AsyncTask<Void, String, Void> {
-
-        @Override
-        protected Void doInBackground(Void... params) {
-
-            Log.d("YO", "IncommingCommTask started (" + this.hashCode() + ").");
-
-            try {
-                ((UBIApplication) getApplication()).setServer(new SimWifiP2pSocketServer(
-                        Integer.parseInt(getString(R.string.port))));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            while (!Thread.currentThread().isInterrupted()) {
-                try {
-                    SimWifiP2pSocket sock = ((UBIApplication) getApplication()).getServer().accept();
-                    try {
-                        BufferedReader sockIn = new BufferedReader(
-                                new InputStreamReader(sock.getInputStream()));
-                        String st = sockIn.readLine();
-                        publishProgress(st);
-                        if(st.equals("Request")){
-                            Toast.makeText(getBaseContext(), "oiii", Toast.LENGTH_LONG).show();
-                        }
-                        else if(st.startsWith("InfoProfile")){
-                            //extract info from the message and added to near ubibikers list
-                        }
-                        sock.getOutputStream().write(("\n").getBytes());
-                    } catch (IOException e) {
-                        Log.d("Error reading socket:", e.getMessage());
-                    } finally {
-                        sock.close();
-                    }
-                } catch (IOException e) {
-                    Log.d("Error socket:", e.getMessage());
-                    break;
-                    //e.printStackTrace();
-                }
-            }
-            return null;
-        }
-
-        @Override
-        protected void onProgressUpdate(String... values) {
-
-        }
-    }
-
-    public class OutgoingCommTask extends AsyncTask<String, Void, String> {
-
-        @Override
-        protected String doInBackground(String... params) {
-            try {
-                ((UBIApplication) getApplication()).setSocket(new SimWifiP2pSocket(params[0],
-                        Integer.parseInt(getString(R.string.port))));
-            } catch (UnknownHostException e) {
-                return "Unknown Host:" + e.getMessage();
-            } catch (IOException e) {
-                return "IO error:" + e. getMessage();
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(String result) {
-            //
-        }
-    }
-
-    public class SendCommTask extends AsyncTask<String, String, Void> {
-
-        @Override
-        protected Void doInBackground(String... msg) {
-            try {
-                ((UBIApplication) getApplication()).getSocket().getOutputStream().write((msg[0] + "\n").getBytes());
-                BufferedReader sockIn = new BufferedReader(
-                        new InputStreamReader(((UBIApplication) getApplication()).getSocket().getInputStream()));
-                sockIn.readLine();
-                ((UBIApplication) getApplication()).getSocket().close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            ((UBIApplication) getApplication()).setSocket(null);
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void result) {
-          //
-        }
-    }
-
-
-
-    @Override
-    public void onPeersAvailable(SimWifiP2pDeviceList peers) {
-        //TODO - function that returns the list of devices in range of wifi
-
-        StringBuilder peersStr = new StringBuilder();
-
-        for (SimWifiP2pDevice device : peers.getDeviceList()) {
-            String devstr = "" + device.deviceName + " (" + device.getVirtIp() + ")\n";
-            peersStr.append(devstr);
-            /*new OutgoingCommTask().executeOnExecutor(
-                    AsyncTask.THREAD_POOL_EXECUTOR,
-                    device.getVirtIp());*/
-            new SendCommTask().executeOnExecutor(
-                    AsyncTask.THREAD_POOL_EXECUTOR,
-                    "Request");
-        }
-
-        // display list of devices in range
-        new android.app.AlertDialog.Builder(this)
-                .setTitle("Devices in WiFi Range")
-                .setMessage(peersStr.toString())
-                .setNeutralButton("Dismiss", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                    }
-                })
-                .show();
-
-    }
 }
 

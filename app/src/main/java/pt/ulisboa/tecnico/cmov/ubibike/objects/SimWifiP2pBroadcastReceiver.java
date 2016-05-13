@@ -8,6 +8,9 @@ import android.widget.Toast;
 
 import pt.inesc.termite.wifidirect.SimWifiP2pBroadcast;
 import pt.inesc.termite.wifidirect.SimWifiP2pInfo;
+import pt.inesc.termite.wifidirect.SimWifiP2pManager;
+import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
+import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
 
 /**
  * Created by gae on 10/05/2016.
@@ -15,6 +18,12 @@ import pt.inesc.termite.wifidirect.SimWifiP2pInfo;
 public class SimWifiP2pBroadcastReceiver extends BroadcastReceiver {
 
     private Activity mActivity;
+    private SimWifiP2pBroadcastReceiver mReceiver;
+    private SimWifiP2pManager.Channel mChannel = null;
+    private SimWifiP2pManager mManager = null;
+    private SimWifiP2pSocketServer mSrvSocket = null;
+    private SimWifiP2pSocket mCliSocket = null;
+    private boolean mBound = false;
 
     public SimWifiP2pBroadcastReceiver(Activity activity) {
         super();

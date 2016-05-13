@@ -48,6 +48,7 @@ public class StationsFragment extends Fragment {
     public HashMap<String,List<String>> stationsHashMap;
     public ArrayList<String> stationsHashMapKeys;
     public ArrayList<LatLng> stationsCoordinates;
+    public ArrayList<Boolean> stateBooking;
 
     private UpdateStationsTask mUpdateStationsTask;
     private String mEmail;
@@ -102,7 +103,7 @@ public class StationsFragment extends Fragment {
             //prepareListData();
         }
         t = new Timer();
-        t.scheduleAtFixedRate(timer, 0, 8000);
+        t.scheduleAtFixedRate(timer, 0, 2000);
     }
 
     @Override
@@ -137,12 +138,11 @@ public class StationsFragment extends Fragment {
     /*
      * Preparing the list data
      */
-    private void processResponse(String json) {
+    private void processResponse(String json, String state) {
 
         stationsHashMapKeys.clear();
         stationsCoordinates.clear();
         stationsHashMap.clear();
-
 
         try {
             JSONObject mObject = new JSONObject(json.toString());
@@ -150,6 +150,7 @@ public class StationsFragment extends Fragment {
 
             for (int i = 0; i < arrStations.length(); i++) {
                 String stationName = arrStations.getJSONObject(i).getString("name");
+
                 JSONObject location = arrStations.getJSONObject(i).getJSONObject("location");
                 double lat = location.getDouble("lat");
                 double lng = location.getDouble("lng");
@@ -241,7 +242,9 @@ public class StationsFragment extends Fragment {
             try {
 
                 String response = new UBIClient().GET("http://10.0.2.2:5000/stations");
-                processResponse(response);
+                String state = new UBIClient().GET("http://10.0.2.2:5000/stations");
+
+                processResponse(response, state);
 
             } catch (ErrorCodeException e){
                 mErrorCode = e.getCode();

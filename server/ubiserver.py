@@ -35,6 +35,7 @@ class Bike():
     self.bike = bike
     self.state = state
     self.owner = None
+    self.station = None
 
   def serialize(self):
     return {
@@ -46,7 +47,8 @@ class Bike():
     return {
       "state": self.state,
       "bike": self.bike,
-      "owner": owner
+      "owner": self.owner,
+      "station": self.station
     }
 
 
@@ -152,19 +154,46 @@ def book():
     if not station.bikes:
       return abort(410) # Resource not available
     else:
-      bike = station.bikes.pop()
+      with ds.lock:
+        bike = station.bikes.pop()
       bike.state = "B"
       bike.owner = email
-      ds.queue.append(bike) 
-      return "OK"
+      bike.station = name
+      with ds.lock:
+        ds.queue.append(bike) 
+      return bike.bike
   else:
     abort(400)
 
-    #  bike = station.bikes.pop()
-    #  bike.state = "B"
-    #  bike.owner = email
-     # print(bike.teste())
-     # ds.queue.append(bike)
+@app.route("/book/check")
+def book_check():
+  if 'email' in request.args:
+    email = request.args.get('email')
+    for bike in ds.queue:
+      if bike.owner == email and bike.state == "B":
+        return bike.station
+    return ""
+  else:
+    abort(400)
+
+@app.route("/book/cancel")
+def book_cancel():
+  if 'email' in request.args:
+    email = request.args.get('email')
+    for bike in ds.queue:
+      if bike.owner == email and bike.state == "B":
+          station_name = bike.station
+          bike.owner = None
+          bike.station = None
+          bike.state = "station"
+          with ds.lock:
+            ds.stations[station_name].bikes.append(bike)
+            ds.queue.remove(bike)
+            return "Book canceled"
+    abort(410) # No bike booked
+  else:
+    abort(400)
+
 
 @app.route("/stations")
 def stations():
@@ -217,7 +246,7 @@ def register():
 @app.route("/ubibiker")
 def ubibiker():
   def filter_users_by_name(name):
-    return lambda email, ubibiker: \
+    return lambda (email, ubibiker): \
       all(map(lambda n: n in ubibiker.name.split(), name.split()))
     
   if 'name' in request.args:

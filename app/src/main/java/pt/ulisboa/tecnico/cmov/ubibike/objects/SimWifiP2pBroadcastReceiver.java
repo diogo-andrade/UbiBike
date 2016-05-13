@@ -1,6 +1,7 @@
 package pt.ulisboa.tecnico.cmov.ubibike.objects;
 
 import android.app.Activity;
+import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -17,7 +18,7 @@ import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
  */
 public class SimWifiP2pBroadcastReceiver extends BroadcastReceiver {
 
-    private Activity mActivity;
+   private Service mService;
     private SimWifiP2pBroadcastReceiver mReceiver;
     private SimWifiP2pManager.Channel mChannel = null;
     private SimWifiP2pManager mManager = null;
@@ -25,9 +26,9 @@ public class SimWifiP2pBroadcastReceiver extends BroadcastReceiver {
     private SimWifiP2pSocket mCliSocket = null;
     private boolean mBound = false;
 
-    public SimWifiP2pBroadcastReceiver(Activity activity) {
+    public SimWifiP2pBroadcastReceiver(Service s) {
         super();
-        this.mActivity = activity;
+        this.mService = s;
     }
 
     @Override
@@ -36,16 +37,15 @@ public class SimWifiP2pBroadcastReceiver extends BroadcastReceiver {
         if (SimWifiP2pBroadcast.WIFI_P2P_STATE_CHANGED_ACTION.equals(action)) {
             int state = intent.getIntExtra(SimWifiP2pBroadcast.EXTRA_WIFI_STATE, -1);
             if (state == SimWifiP2pBroadcast.WIFI_P2P_STATE_ENABLED) {
-                Toast.makeText(mActivity, "WiFi Direct enabled",
+                Toast.makeText(mService.getApplicationContext(), "WiFi Direct Enabled",
                         Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(mActivity, "WiFi Direct disabled",
+                Toast.makeText(mService.getApplicationContext(), "WiFi Direct Disable",
                         Toast.LENGTH_SHORT).show();
             }
         } else if (SimWifiP2pBroadcast.WIFI_P2P_PEERS_CHANGED_ACTION.equals(action))
         {
-            Toast.makeText(mActivity, "Peer list changed",
-                    Toast.LENGTH_SHORT).show();
+
         } else if (SimWifiP2pBroadcast.WIFI_P2P_NETWORK_MEMBERSHIP_CHANGED_ACTION.
                 equals(action)) {
             SimWifiP2pInfo ginfo = (SimWifiP2pInfo) intent.getSerializableExtra(

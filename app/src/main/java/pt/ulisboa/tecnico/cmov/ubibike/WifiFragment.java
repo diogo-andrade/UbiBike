@@ -28,14 +28,14 @@
         import pt.inesc.termite.wifidirect.SimWifiP2pDeviceList;
         import pt.inesc.termite.wifidirect.SimWifiP2pManager.PeerListListener;
         import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
+        import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketManager;
         import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
+        import pt.ulisboa.tecnico.cmov.ubibike.services.TermiteService;
 
         /**
  * Created by gae on 10/05/2016.
  */
 public class WifiFragment extends Fragment{
-
-    private Messenger mService = null;
 
     public WifiFragment() {
         // Required empty public constructor
@@ -71,92 +71,28 @@ public class WifiFragment extends Fragment{
 
     private View.OnClickListener listenerWifiOnButton = new View.OnClickListener() {
         public void onClick(View v){
-            Intent intent = new Intent(v.getContext(), SimWifiP2pService.class);
-            getActivity().bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
-            ((UBIApplication)getActivity().getApplication()).setBound(true);
 
             getView().findViewById(R.id.idWifiOffButton).setEnabled(true);
 
             v.findViewById(R.id.idWifiOnButton).setEnabled(false);
 
-         new IncommingCommTask().executeOnExecutor(
-                 AsyncTask.THREAD_POOL_EXECUTOR);
+            if (TermiteService.getInstance() == null) {
+                Log.d("DEBUG", "para ai");
+        }
+            SimWifiP2pSocketManager.Init(getActivity().getBaseContext());
+            Intent intent = new Intent();
 
+            TermiteService.getInstance().startService(intent);
 
         }
     };
 
     private View.OnClickListener listenerWifiOffButton = new View.OnClickListener() {
         public void onClick(View v){
-            if (((UBIApplication) getActivity().getApplication()).getBound()) {
-                getActivity().unbindService(mConnection);
-                ((UBIApplication) getActivity().getApplication()).setBound(false);
                 getView().findViewById(R.id.idWifiOnButton).setEnabled(true);
                 v.findViewById(R.id.idWifiOffButton).setEnabled(false);
             }
-        }
     };
 
 
-    private ServiceConnection mConnection = new ServiceConnection() {
-        // callbacks for service binding, passed to bindService()
-
-        @Override
-        public void onServiceConnected(ComponentName className, IBinder service) {
-            ((UBIApplication) getActivity().getApplication()).setManager(new SimWifiP2pManager(new Messenger(service)));
-            ((UBIApplication) getActivity().getApplication()).setChannel(((UBIApplication) getActivity().getApplication()).getManager().initialize(getActivity().getApplication(), getActivity().getMainLooper(), null));
-            ((UBIApplication) getActivity().getApplication()).setBound(true);
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName arg0) {
-            ((UBIApplication) getActivity().getApplication()).setManager(null);
-            ((UBIApplication) getActivity().getApplication()).setChannel(null);
-            ((UBIApplication) getActivity().getApplication()).setBound(false);
-        }
-    };
-
-            public  class IncommingCommTask extends AsyncTask<Void, String, Void> {
-
-                @Override
-                protected Void doInBackground(Void... params) {
-
-                    Log.d("YO", "IncommingCommTask started (" + this.hashCode() + ").");
-
-                    try {
-                        ((UBIApplication) getActivity().getApplication()).setServer(new SimWifiP2pSocketServer(
-                                Integer.parseInt(getString(R.string.port))));
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    while (!Thread.currentThread().isInterrupted()) {
-                        try {
-                            SimWifiP2pSocket sock = ((UBIApplication) getActivity().getApplication()).getServer().accept();
-                            try {
-                                BufferedReader sockIn = new BufferedReader(
-                                        new InputStreamReader(sock.getInputStream()));
-                                String st = sockIn.readLine();
-                                Log.d("DEBUG", st);
-                                publishProgress(st);
-                                if (st.equals("Request")) {
-                                    Log.d("DEBUG", "oi oi oi oioi");
-                                    Toast.makeText(getContext(), "oiii", Toast.LENGTH_LONG).show();
-                                } else if (st.startsWith("InfoProfile")) {
-                                    //extract info from the message and added to near ubibikers list
-                                }
-                                sock.getOutputStream().write(("\n").getBytes());
-                            } catch (IOException e) {
-                                Log.d("Error reading socket:", e.getMessage());
-                            } finally {
-                                sock.close();
-                            }
-                        } catch (IOException e) {
-                            Log.d("Error socket:", e.getMessage());
-                            break;
-                            //e.printStackTrace();
-                        }
-                    }
-                    return null;
-                }
-            }
 }

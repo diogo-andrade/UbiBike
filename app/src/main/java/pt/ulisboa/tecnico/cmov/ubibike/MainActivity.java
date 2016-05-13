@@ -56,7 +56,6 @@ public class MainActivity extends AppCompatActivity
 
     Intent intentTrackService;
 
-             String locationProvider = LocationManager.NETWORK_PROVIDER;
 // Or use LocationManager.GPS_PROVIDER
 
 
@@ -119,7 +118,6 @@ public class MainActivity extends AppCompatActivity
             return;
         }
         lManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 100, 1, this);
-        Location lastKnownLocation = lManager.getLastKnownLocation(locationProvider);
     }
 
     // Search for the Overflow icon and replace his color

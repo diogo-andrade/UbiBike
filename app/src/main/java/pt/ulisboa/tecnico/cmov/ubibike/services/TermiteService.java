@@ -155,6 +155,7 @@ public class TermiteService extends Service implements SimWifiP2pManager.PeerLis
                         String st = sockIn.readLine();
                         publishProgress(st);
                         if(st.startsWith("[INFO]")){
+                            Log.d("DEBUG", "INFO");
                             String[] stt = st.split("%%");
                             groupUsers.add(stt);
                         }
@@ -206,6 +207,7 @@ public class TermiteService extends Service implements SimWifiP2pManager.PeerLis
     @Override
     public void onGroupInfoAvailable(SimWifiP2pDeviceList devices, SimWifiP2pInfo groupInfo)  {
         StringBuilder peersStr = new StringBuilder();
+        Log.d("DEBUG", "GROUP");
         for (String deviceName : groupInfo.getDevicesInNetwork()) {
             SimWifiP2pDevice device = devices.getByName(deviceName);
             String devstr = "" + deviceName + " (" +
@@ -213,7 +215,7 @@ public class TermiteService extends Service implements SimWifiP2pManager.PeerLis
             peersStr.append(devstr);
             Toast.makeText(this.getApplicationContext(), device.deviceName + "%%" + device.getVirtIp(),
                     Toast.LENGTH_SHORT).show();
-            String content = "[GET INFO]";
+            String content = "[INFO]";
             String ip = device.getVirtIp();
             new SendCommTask().executeOnExecutor(
                     AsyncTask.THREAD_POOL_EXECUTOR,

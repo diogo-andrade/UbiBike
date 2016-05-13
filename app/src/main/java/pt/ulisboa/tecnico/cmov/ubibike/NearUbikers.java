@@ -99,12 +99,9 @@ public class NearUbikers extends Fragment {
 
         mItems = result;
 
-        mAdapter = new NearUbibikerAdapter(getActivity().getBaseContext(),R.layout.near_ubibiker_list_item, EXTRA_NAME, mItems);
+        mAdapter = new NearUbibikerAdapter(getActivity().getBaseContext(),R.layout.near_ubibiker_list_item, EXTRA_NAME, result);
 
         listView.setAdapter(mAdapter);
-
-
-
     }
 
     @Override
@@ -120,7 +117,13 @@ public class NearUbikers extends Fragment {
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
+                    result = new ArrayList<Ubibiker>();
                     generateQueryResult();
+                    mItems = result;
+                    Log.d("DEBUG", "YO");
+                    mAdapter =  new NearUbibikerAdapter(getActivity().getBaseContext(),R.layout.near_ubibiker_list_item, EXTRA_NAME, result);
+
+                    listView.setAdapter(mAdapter);
                 }
             });
         }
@@ -165,11 +168,14 @@ public class NearUbikers extends Fragment {
     public void generateQueryResult() {
         List<String[]> aux = TermiteService.getInstance().getGroupUsers();
         for(String[] s : aux){
+            Log.d("DEBUG", s[0]);
+            Log.d("DEBUG", s[1]);
             Ubibiker u = new Ubibiker(s[0], s[1]);
-            result.add(u);
+            Ubibiker u1 = new Ubibiker("ANDRE", "JORGE@CENAS");
+            result.add(u1);
         }
-
-        mAdapter.notifyDataSetChanged();
+        Ubibiker u1 = new Ubibiker("ANDRE", "JORGE@CENAS");
+        result.add(u1);
     }
 
 }

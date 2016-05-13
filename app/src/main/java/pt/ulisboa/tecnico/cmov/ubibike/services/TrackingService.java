@@ -45,6 +45,11 @@ public class TrackingService extends Service {
         return flags;
     }
 
+    @Override
+    public void onDestroy() {
+        stopSelf();
+    }
+
 
     private void startService() {
         timer.scheduleAtFixedRate(new mainTask(), 0, 2000);
@@ -56,7 +61,8 @@ public class TrackingService extends Service {
         public void run() {
 
             if(TermiteService.getInstance().isWiFiON())
-                TermiteService.getInstance().updatePeers();
+                Log.d("TRACKING", "......................");
+                System.out.println("Bike: "+TermiteService.getInstance().getPeers());
             Log.d("TRACKING", "......................");
         }
     }

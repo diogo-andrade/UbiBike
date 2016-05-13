@@ -144,6 +144,31 @@ def test():
   print(json)
   return jsonify(ubibiker.serialize())
 
+@app.route("/score/update")
+def score_update():
+  if 'email' in request.args and\
+     'score' in request.args:
+    email = request.args.get('email')
+    points = request.args.get('points')
+    ubibiker = ds.ubibikers[email]
+    ubibiker.points
+    ds.ubibikers[email] = ubibiker
+    return "OK"
+  else:
+    abort(400)
+
+@app.route("/score")
+def score():
+  if 'email' in request.args and\
+     'score' in request.args:
+    email = request.args.get('email')
+    points = request.args.get('points')
+    ubibiker = ds.ubibikers[email]
+    return ubibiker.points
+  else:
+    abort(400)
+
+
 @app.route("/book")
 def book():
   if 'email' in request.args and\

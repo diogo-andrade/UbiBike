@@ -54,6 +54,12 @@ public class MainActivity extends AppCompatActivity
     private String mScore = "DEFAULT";
     TermiteService termite;
 
+    Intent intentTrackService;
+
+             String locationProvider = LocationManager.NETWORK_PROVIDER;
+// Or use LocationManager.GPS_PROVIDER
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,8 +75,8 @@ public class MainActivity extends AppCompatActivity
 
         termite = new TermiteService();
         // Tracking service
-        Intent intent = new Intent(MainActivity.this, TrackingService.class);
-        startService(intent);
+        intentTrackService = new Intent(MainActivity.this, TrackingService.class);
+        startService(intentTrackService);
 
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -113,6 +119,7 @@ public class MainActivity extends AppCompatActivity
             return;
         }
         lManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 100, 1, this);
+        Location lastKnownLocation = lManager.getLastKnownLocation(locationProvider);
     }
 
     // Search for the Overflow icon and replace his color
@@ -273,7 +280,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onDestroy(){
         super.onDestroy();
-
+        stopService(intentTrackService);
     }
 
     @Override

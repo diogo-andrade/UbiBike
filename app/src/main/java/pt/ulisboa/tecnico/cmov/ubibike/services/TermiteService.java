@@ -49,6 +49,7 @@ public class TermiteService extends Service implements SimWifiP2pManager.PeerLis
     private static String Name;
     private static String Mail;
     private List<String[]> groupUsers = new ArrayList<String[]>();
+    StringBuilder peersStr = new StringBuilder();
 
     public TermiteService() {
         super();
@@ -122,7 +123,6 @@ public class TermiteService extends Service implements SimWifiP2pManager.PeerLis
             Toast.makeText(getBaseContext(), "Service not bound", Toast.LENGTH_SHORT).show();
         }
     }
-
 
 
     public void updateGroup() {
@@ -229,16 +229,20 @@ public class TermiteService extends Service implements SimWifiP2pManager.PeerLis
 
     @Override
     public void onPeersAvailable(SimWifiP2pDeviceList peers) {
-        StringBuilder peersStr = new StringBuilder();
+        peersStr = new StringBuilder();
 
         for (SimWifiP2pDevice device : peers.getDeviceList()) {
             String devstr = "" + device.deviceName + " (" + device.getVirtIp() + ")\n";
             peersStr.append(devstr);
-            Toast.makeText(this.getApplicationContext(), device.deviceName + "%%" + device.getVirtIp(),
+            Toast.makeText(this.getApplicationContext(), "Connected to " + device.deviceName,
                     Toast.LENGTH_SHORT).show();
-
         }
+    }
 
+    public String getPeers(){
+        mManager.requestPeers(mChannel, TermiteService.this);
+
+        return peersStr.toString();
     }
 
 

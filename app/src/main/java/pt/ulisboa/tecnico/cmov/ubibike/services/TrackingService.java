@@ -60,9 +60,9 @@ public class TrackingService extends Service {
         @Override
         public void run() {
 
-            if(TermiteService.getInstance().isWiFiON())
+           /* if(TermiteService.getInstance().isWiFiON())
                 Log.d("TRACKING", "......................");
-                System.out.println("Bike: "+TermiteService.getInstance().getPeers());
+                System.out.println("Bike: "+TermiteService.getInstance().getPeers());*/
             Log.d("TRACKING", "......................");
         }
     }
